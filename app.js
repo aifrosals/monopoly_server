@@ -1,25 +1,27 @@
-const express = require("express")
+const express = require('express')
 const app = express()
 const http = require('http');
 var server = http.createServer(app)
-const socketIO = require("socket.io")(server)
+const socketIO = require('socket.io')(server)
+
+app.use(express.json())
 
 var users = [{
         'id': 'user1',
         'presence': 'offline',
-        'current_slot': null,
+        'current_slot': 0,
         'socket_id': null,
     },
     {
         'id': 'user2',
         'presence': 'offline',
-        'current_slot': null,
+        'current_slot': 0,
         'socket_id': null,
     },
     {
         'id': 'user3',
         'presence': 'offline',
-        'current_slot': null,
+        'current_slot': 0,
         'socket_id': null,
     }
 ]
@@ -48,7 +50,7 @@ socketIO.on("connection", (userSocket) => {
 
 
 
-    userSocket.on('offline', (data) => {
+    userSocket.on('userMove', (data) => {
         console.log('user is offline', data)
     })
 
@@ -72,12 +74,24 @@ socketIO.on("connection", (userSocket) => {
 
 })
 
-
-
-
+// generate a work
+function findDaysBetweenDates(begin, last){}
 app.get('/', (req, res) => {
-    res.send("Node Server is running. Yay!!")
+    res.send("Node server is running ")
 })
 
 
-//TODO: the version of socket is 2.4 which is compatible with flutter version, update accroding into futrue
+app.post('/login', (req, res) => {
+    console.log('login gets called', req.body.id)
+    var userId = req.body.id
+    for(var user of users) {
+      if(userId == user.id) {
+          return res.status(200).send(user)
+      }
+    
+    }
+    return res.status(400).send('no user found')
+})
+
+
+//TODO: the version of socket is 2.4 which is compatible with flutter version, update accrodingly in futrue
