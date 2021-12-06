@@ -4,6 +4,7 @@
   "description": "Monopoly server to manage board game",
   "main": "index.js",
   "scripts": {
+    "start": "node app.js",
     "test": "node index.js"
   },
   "author": "cybermeteors",
@@ -11,5 +12,10 @@
   "dependencies": {
     "express": "^4.17.1",
     "socket.io": "^2.4.1"
+  },
+
+  "engines": {
+    "node": "12.x"
   }
+
 }

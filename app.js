@@ -44,19 +44,25 @@ socketIO.on("connection", (userSocket) => {
         }
         console.log('user object on login', users)
 
-        userSocket.emit('checkUsers', users)
+      //  userSocket.emit('checkUsers', users)
+      socketIO.sockets.emit('checkUsers', users)
     })
     console.log("connection has been established")
 
 
 
     userSocket.on('userMove', (data) => {
-        console.log('user is offline', data)
+        console.log('user moved', data)
+        for(var user of users) {
+            if(user.id == data.id) {
+                user.current_slot = data.current_slot
+            }
+        }
+      //  userSocket.emit('checkUsers', users)
+      socketIO.sockets.emit('checkUsers', users)
     })
 
     
-
-
     userSocket.on('disconnect', () => {
         console.log('user has disconnected', )
 
@@ -67,15 +73,14 @@ socketIO.on("connection", (userSocket) => {
         }
         console.log('user object', users)
 
-        userSocket.emit('checkUsers', users)
+//userSocket.emit('checkUsers', users)
+        socketIO.sockets.emit('checkUsers', users)
 
     })
 
 
 })
 
-// generate a work
-function findDaysBetweenDates(begin, last){}
 app.get('/', (req, res) => {
     res.send("Node server is running ")
 })
@@ -92,6 +97,8 @@ app.post('/login', (req, res) => {
     }
     return res.status(400).send('no user found')
 })
+
+
 
 
 //TODO: the version of socket is 2.4 which is compatible with flutter version, update accrodingly in futrue
