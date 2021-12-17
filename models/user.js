@@ -1,5 +1,5 @@
-import { Schema as _Schema, model } from "mongoose";
-var Schema = _Schema;
+var mongoose = require('mongoose')
+var Schema = mongoose.Schema
 
 var UserSchema = new Schema({
   id: {
@@ -21,6 +21,5 @@ var UserSchema = new Schema({
   }
 },  {timestamps: true});
 
-var User = model('users', UserSchema);
-
-export default User;
+var User = mongoose.model('users', UserSchema);
+module.exports = User

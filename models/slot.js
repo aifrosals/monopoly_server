@@ -1,5 +1,5 @@
-import { Schema as _Schema, model } from "mongoose";
-var Schema = _Schema;
+const mongoose = require('mongoose')
+var Schema = mongoose.Schema
 
 var SlotSchema = new Schema ({
     initial_type: {
@@ -11,10 +11,15 @@ var SlotSchema = new Schema ({
     },
     name: {
         type: String,
+        required: [true, 'Need Slot name']
+    },
+    color: {
+        type: String,
+        required: [true]
     },
     index: {
         type: Number,
-        required: true
+        required: [true]
     },
     land_price: {
         type: Number,
@@ -27,8 +32,8 @@ var SlotSchema = new Schema ({
         ref: 'users'
     }, 
   
-}, {timeseries: ture})
+}, {timestamps: true})
 
-var Slot = model('slots', SlotSchema)
+var Slot = mongoose.model('slots', SlotSchema)
 
-export default Slot
+module.exports = Slot;
