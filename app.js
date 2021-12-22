@@ -91,7 +91,6 @@ socketIO.on("connection", (userSocket) => {
     session.startTransaction();
 
     try {
-      //TODO: add weighting mechanism for the dice to move smooth
       var userResult = await User.findOne({
         id: data.id,
       }).session(session);
@@ -115,6 +114,12 @@ socketIO.on("connection", (userSocket) => {
 
           console.log('owner is the current user')
           //TODO: add the upgrading logic here
+           if(slotResult.current_type != 'city') {
+           userSocket.emit('upgrade_slot', slotResult) 
+           }
+           else {
+             console.log('type is city which cannot be upgraded')
+           }
         }
         else {
           //* buy the land
@@ -127,6 +132,8 @@ socketIO.on("connection", (userSocket) => {
         //* other effects of the slot
         console.log("not a land");
       }
+      console.log('user loops',data.loops)
+      userResult.loops = data.loops;
       userResult.current_slot = data.current_slot;
       await userResult.save();
       await slotResult.save();
@@ -171,7 +178,6 @@ app.post("/login", async (req, res) => {
     return res.status(200).send(result);
   } catch (error) {
     console.error("login error", error);
-    console.error("login error", error.stack());
     return res.status(400).send("something went wrong");
   }
 });
@@ -183,12 +189,12 @@ app.get("/getSlots", async (req, res) => {
     return res.status(200).send(result);
   } catch (error) {
     console.error("getSlot error", error);
-    console.error("getSlot error", error.stack());
     return res.status(400).send("something went wrong");
   }
 });
 
 app.post("/buyLand", async (req, res) => {
+  console.log('buyLand user current slot', req.body.slotIndex)
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -197,7 +203,7 @@ app.post("/buyLand", async (req, res) => {
     var slotResult = await Slot.findOne({
       index: slotIndex,
     }).session(session);
-    console.log("the slot result", slotResult);
+    console.log("buyLand slot", slotResult);
 
     if (slotResult.owner != null) {
       return res.status(400).send("This place is already bought");
@@ -205,8 +211,9 @@ app.post("/buyLand", async (req, res) => {
       var userResult = await User.findOne({
         id: userId,
       }).session(session);
+      console.log('buyLand landPrice', slotResult.landPrice)
       slotResult.owner = userResult;
-      userResult.credits = userResult.credits - slotResult.updated_price;
+      userResult.credits = userResult.credits - slotResult.land_price;
       await userResult.save();
       await slotResult.save();
       await session.commitTransaction();
@@ -214,6 +221,106 @@ app.post("/buyLand", async (req, res) => {
     }
   } catch (error) {
     console.error("buyLand error", error);
+    await session.abortTransaction()
+    return res.status(402).send("Something went wrong 402");
+  } finally {
+    console.log("finally is being called 3");
+    session.endSession();
+  }
+});
+
+app.post("/upgradeSlot", async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    var slotIndex = req.body.slotIndex;
+    var userId = req.body.userId;
+    var slotResult = await Slot.findOne({
+      index: slotIndex,
+    }).populate("owner", "id").session(session);
+    console.log("upgradeSlot slot", slotResult)
+    var userResult = await User.findOne({
+      id: userId,
+    }).session(session);
+    console.log("slot id", slotResult.owner._id.toString());
+    console.log("")
+
+    if (slotResult.owner._id.toString() != userResult._id.toString()) {
+      return res.status(400).send("This place is already bought by someone else");
+    } else {
+       var name;
+       var price;
+       var type = slotResult.current_type
+       var newType;
+
+       switch (type) {
+        case 'land':
+          {
+            price = 100;
+            name = 'House';
+            newType = 'house'
+          }
+          break;
+        case 'house':
+          {
+            price = 200;
+            name = 'Shop';
+            newType = 'shop'
+          }
+          break;
+        case 'shop':
+          {
+            price = 400;
+            name = 'Condo';
+            newType = 'condo'
+          }
+          break;
+        case 'condo':
+          {
+            price = 800;
+            name = 'Business Center';
+            newType = 'business_center'
+          }
+          break;
+        case 'business_center':
+          {
+            price = 1600;
+            name = 'Theme Park';
+            newType = 'theme_park'
+          }
+          break;
+        case 'theme_park':
+          {
+            price = 3150;
+            name = 'City';
+            newType = 'city'
+          }
+          break;
+        default:
+          {}
+          break;
+      } 
+
+      if(price == null || name == null || newType == null) {
+        return res.status(401).send('Something went wrong')
+      }
+
+      slotResult.updated_price = price
+      slotResult.name = name
+      slotResult.current_type = newType
+
+      console.log('updated slot', slotResult)
+
+      slotResult.owner = userResult;
+
+      userResult.credits = userResult.credits - slotResult.updated_price;
+      await userResult.save();
+      await slotResult.save();
+      await session.commitTransaction();
+      return res.status(200).send(userResult);
+    }
+  } catch (error) {
+    console.error("upgradeSlot error", error);
     await session.abortTransaction()
     return res.status(402).send("Something went wrong 402");
   } finally {

@@ -18,6 +18,9 @@ var UserSchema = new Schema({
   },
   credits: {
     type: Number,
+  },
+  loops: {
+    type: Number,
   }
 },  {timestamps: true});
 
