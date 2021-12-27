@@ -110,6 +110,11 @@ socketIO.on("connection", (userSocket) => {
           console.log('The rent is: ', rent)
           userResult.credits = userResult.credits - rent
           var userResult2 = await User.findByIdAndUpdate({_id: slotResult.owner._id}, {$inc: {'credits': rent}}).session(session)
+          var data = {
+            slot: slotResult,
+            owner: userResult2,
+          }
+          userSocket.emit('buy_owned_slot', data)
         } else if( slotResult.owner != null && slotResult.owner._id.toString() == userResult._id.toString()) {
 
           console.log('owner is the current user')
