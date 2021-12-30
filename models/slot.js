@@ -33,6 +33,9 @@ var SlotSchema = new Schema({
     all_step_count: {
         type: Object
     },
+    status: {
+        type: String
+    },
     owner: {
         type: Schema.Types.ObjectId,
         ref: 'users'
