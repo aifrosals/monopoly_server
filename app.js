@@ -276,6 +276,7 @@ app.post("/buyLand", async (req, res) => {
 });
 
 app.post("/upgradeSlot", async (req, res) => {
+  //TODO put this session in try and end session on both try, catch and before each return
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -377,7 +378,8 @@ app.post("/upgradeSlot", async (req, res) => {
   }
 });
 
-app.post("/sendBuyRequest", async (req, res) => {
+//* buy property is buying the property from an owner
+app.post("/buyProperty", async (req, res) => {
   try {
     var slotIndex = req.body.slotIndex;
     var userId = req.body.userId;
@@ -387,9 +389,46 @@ app.post("/sendBuyRequest", async (req, res) => {
   }
 })
 
+app.post("/urgentSell", async (req, res) => {
+  
+try {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  var slotIndex = req.body.slotIndex;
+  var userId = req.body.userId; 
+  var slotResult = await Slot.findOne({
+    index: slotIndex,
+  }).populate("owner", "id").session(session);
+  console.log("upgradeSlot slot", slotResult)
+  var userResult = await User.findOne({
+    id: userId,
+  }).session(session);
+  console.log("slot id", slotResult.owner._id.toString());
+
+  if (slotResult.owner._id.toString() != userResult._id.toString()) {
+    session.endSession()
+    return res.status(400).send("This place is already bought by someone else");
+  } 
+  else {
+     slotResult.status = "for_sell"
+     slotResult.save()
+     await session.commitTransaction()
+     session.endSession()
+     return res.status(200).send("Place is for sell now")
+  }
+} catch(error) {
+  console.error("upgradeSlot error", error);
+  await session.abortTransaction()
+  session.commitTransaction()
+  return res.status(402).send("Something went wrong 402");
+} 
+})
+
 //TODO: the version of socket is 2.4 which is compatible with flutter version, update accrodingly in futrue
 
 
+//TODO: put this into another helper file
 var slot_names = [
   {
     name: 'Business Center',
