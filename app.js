@@ -8,6 +8,7 @@ const conn = require("./database/conn");
 
 const User = require("./models/user");
 const Slot = require("./models/slot");
+const BuyingRequest = require("./models/buying_request")
 
 //* socket emitting
 //  userSocket.emit('checkUsers', users)  //* emits to the one connected socket
@@ -110,15 +111,53 @@ socketIO.on("connection", (userSocket) => {
           console.log('The rent is: ', rent)
           userResult.credits = userResult.credits - rent
           var userResult2 = await User.findByIdAndUpdate({_id: slotResult.owner._id}, {$inc: {'credits': rent}}).session(session)
-          var data = {
+         
+          console.log('if user steps exists')
+          // console.log(slotResult.all_step_count)
+          // console.log(userResult._id.toString() in slotResult.all_step_count)
+
+          //TODO: Remove this first condition later and add {} in the slot schema for counts
+          if(slotResult.all_step_count == null) {
+            console.log('step count is null')
+            slotResult.all_step_count = {}
+            slotResult.all_step_count[userResult._id.toString()] = 1
+            console.log('new step count added with property')
+          }
+          else if (userResult._id.toString() in slotResult.all_step_count == false) {
+            console.log('step count does not contains users')
+            slotResult.all_step_count[userResult._id.toString()] = 1
+            console.log('new step count added with user')
+          }
+          else {
+            console.log('step count not empty', slotResult.all_step_count[userResult._id.toString()] )
+            slotResult.all_step_count[userResult._id.toString()] = slotResult.all_step_count[userResult._id.toString()] + 1
+            console.log('step count is incremented', slotResult.all_step_count[userResult._id.toString()])
+          }
+
+        //  slotResult.markModified("all_step_count")
+          console.log('result of slot')
+          console.log(slotResult)
+
+          //TODO: Add User selling condition before count step to buy on half price
+         
+
+          //TODO: Add the condition for counting steps
+          var stepCount = slotResult.all_step_count[userResult._id.toString()]
+          if(stepCount % 3 == 0) {
+            var sellData = { 
             slot: slotResult,
             owner: userResult2,
           }
-          userSocket.emit('buy_owned_slot', data)
+          userSocket.emit('buy_owned_slot', sellData)
+          }
+          else {
+            // do nothing
+          }
+         
+          
         } else if( slotResult.owner != null && slotResult.owner._id.toString() == userResult._id.toString()) {
 
           console.log('owner is the current user')
-          //TODO: add the upgrading logic here
            if(slotResult.current_type != 'city') {
            userSocket.emit('upgrade_slot', slotResult) 
            }
@@ -140,6 +179,8 @@ socketIO.on("connection", (userSocket) => {
       console.log('user loops',data.loops)
       userResult.loops = data.loops;
       userResult.current_slot = data.current_slot;
+      //* it is necessary to tell what field is being changed
+      slotResult.markModified("all_step_count")
       await userResult.save();
       await slotResult.save();
       await session.commitTransaction();
@@ -256,49 +297,50 @@ app.post("/upgradeSlot", async (req, res) => {
        var name;
        var price;
        var type = slotResult.current_type
+       var level = slotResult.level
        var newType;
+       var newLevel;
 
-       switch (type) {
-        case 'land':
+       switch (level) {
+        case 0:
           {
             price = 100;
             name = 'House';
             newType = 'house'
+            newLevel = 1
           }
           break;
-        case 'house':
+        case 1:
           {
             price = 200;
             name = 'Shop';
             newType = 'shop'
+            newLevel = 2
           }
           break;
-        case 'shop':
+        case 2:
           {
             price = 400;
             name = 'Condo';
             newType = 'condo'
+            newLevel = 3
           }
           break;
-        case 'condo':
+        case 3:
           {
             price = 800;
-            name = 'Business Center';
-            newType = 'business_center'
+            let randomSlot = getRandomSlotName()
+            name = randomSlot.name;
+            newType = randomSlot.type;
+            newLevel = 4
           }
           break;
-        case 'business_center':
+        case 4:
           {
             price = 1600;
-            name = 'Theme Park';
-            newType = 'theme_park'
-          }
-          break;
-        case 'theme_park':
-          {
-            price = 3150;
             name = 'City';
             newType = 'city'
+            newLevel = 5
           }
           break;
         default:
@@ -306,13 +348,14 @@ app.post("/upgradeSlot", async (req, res) => {
           break;
       } 
 
-      if(price == null || name == null || newType == null) {
+      if(price == null || name == null || newType == null || newLevel == null) {
         return res.status(401).send('Something went wrong')
       }
 
       slotResult.updated_price = price
       slotResult.name = name
       slotResult.current_type = newType
+      slotResult.level = newLevel
 
       console.log('updated slot', slotResult)
 
@@ -334,4 +377,31 @@ app.post("/upgradeSlot", async (req, res) => {
   }
 });
 
+app.post("/sendBuyRequest", async (req, res) => {
+  try {
+    var slotIndex = req.body.slotIndex;
+    var userId = req.body.userId;
+
+  } catch(error) {
+    
+  }
+})
+
 //TODO: the version of socket is 2.4 which is compatible with flutter version, update accrodingly in futrue
+
+
+var slot_names = [
+  {
+    name: 'Business Center',
+    type: 'business_center'
+  },
+  {
+    name: 'Theme Park',
+    type: 'theme_park'
+  }
+]
+
+function getRandomSlotName() {
+  let i = (Math.random() >= 0.5) ? 1 :0
+  return slot_names[i]
+}

@@ -1,13 +1,16 @@
 const mongoose = require('mongoose')
 var Schema = mongoose.Schema
 
-var SlotSchema = new Schema ({
+var SlotSchema = new Schema({
     initial_type: {
-       type: String,
+        type: String,
     },
     current_type: {
         type: String,
         required: [true]
+    },
+    level: {
+        type: Number
     },
     name: {
         type: String,
@@ -27,12 +30,15 @@ var SlotSchema = new Schema ({
     updated_price: {
         type: Number,
     },
+    all_step_count: {
+        type: Object
+    },
     owner: {
         type: Schema.Types.ObjectId,
         ref: 'users'
-    }, 
-  
-}, {timestamps: true})
+    },
+
+}, { timestamps: true })
 
 var Slot = mongoose.model('slots', SlotSchema)
 
