@@ -182,6 +182,28 @@ socketIO.on("connection", (userSocket) => {
       } else {
         //* other effects of the slot
         console.log("not a land");
+       if(slotResult.initial_type == "reward") {
+         console.log('reward')
+        if(slotResult.all_step_count == null) {
+          slotResult.all_step_count = {}
+          slotResult.all_step_count[userResult._id.toString()] = 1
+        }
+        else if (userResult._id.toString() in slotResult.all_step_count == false) {
+          slotResult.all_step_count[userResult._id.toString()] = 1
+        }
+        else {
+          slotResult.all_step_count[userResult._id.toString()] = slotResult.all_step_count[userResult._id.toString()] + 1
+        }
+        if(slotResult.all_step_count[userResult._id.toString()] == 5) {
+          userResult.credits = userResult.credits + 5
+          slotResult.all_step_count[userResult._id.toString()] = 0
+        }
+       }
+       else if(slotResult.initial_type == "chest") {
+          let cred = slotController.getCommunityChestCredits()
+          userResult.credits = userResult.credits + cred
+          userSocket.emit('chest', `Congratulations you gain ${cred} credits from Community Chest`)
+       }
       }
       console.log('user loops',data.loops)
       userResult.loops = data.loops;
@@ -266,6 +288,7 @@ app.post("/buyLand", async (req, res) => {
       }).session(session);
       console.log('buyLand landPrice', slotResult.landPrice)
       slotResult.owner = userResult;
+      slotResult.name = "Land"
       userResult.credits = userResult.credits - slotResult.land_price;
       await userResult.save();
       await slotResult.save();
@@ -536,6 +559,6 @@ var slot_names = [
 ]
 
 function getRandomSlotName() {
-  let i = (Math.random() >= 0.5) ? 1 :0
+  let i = (Math.random() >= 0.5) ? 1 : 0
   return slot_names[i]
 }
