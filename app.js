@@ -8,13 +8,14 @@ const conn = require("./database/conn");
 
 const User = require("./models/user");
 const Slot = require("./models/slot");
-const BuyingRequest = require("./models/buying_request")
+
 
 //* socket emitting
 //  userSocket.emit('checkUsers', users)  //* emits to the one connected socket
 //  socketIO.sockets.emit('checkUsers', users) //* emit to the all connected sockets
 
 const slotController = require("./controllers/slotController")
+const transactionController = require("./controllers/transactionController")
 
 const userStream = User.watch();
 const slotStream = Slot.watch();
@@ -34,7 +35,7 @@ slotStream.on("change", (change) => {
 
 async function updateSlotsFAUsers() {
   try {
-    var slotResult = await Slot.find().populate("owner", "id");
+    var slotResult = await Slot.find().populate("owner", "id").sort('index');
     console.log("updateSlotsFAUsers", slotResult);
     socketIO.sockets.emit("checkBoard", slotResult);
   } catch (error) {
@@ -259,7 +260,7 @@ app.post("/login", async (req, res) => {
 
 app.get("/getSlots", async (req, res) => {
   try {
-    var result = await Slot.find().populate("owner", "id");
+    var result = await Slot.find().populate("owner", "id").sort('index');
     console.log("slots from db", result);
     return res.status(200).send(result);
   } catch (error) {
@@ -292,6 +293,7 @@ app.post("/buyLand", async (req, res) => {
       userResult.credits = userResult.credits - slotResult.land_price;
       await userResult.save();
       await slotResult.save();
+      await transactionController.saveTransaction(userResult, slotResult, 'land',slotResult.landPrice)
       await session.commitTransaction();
       return res.status(200).send(userResult);
     }
@@ -394,6 +396,8 @@ app.post("/upgradeSlot", async (req, res) => {
       userResult.credits = userResult.credits - slotResult.updated_price;
       await userResult.save();
       await slotResult.save();
+      await transactionController.saveTransaction(userResult, slotResult, 'upgrade',price )
+
       await session.commitTransaction();
       return res.status(200).send(userResult);
     }
@@ -444,6 +448,8 @@ app.post("/buyProperty", async (req, res) => {
       await ownerResult.save();
       await userResult.save();
       await slotResult.save();
+      await transactionController.saveTransaction(userResult, slotResult, 'seller', sellingPrice)
+
       await session.commitTransaction();
       return res.status(200).send(userResult);
     }
@@ -494,6 +500,7 @@ app.post("/buyPropertyHalf", async (req, res) => {
       await ownerResult.save();
       await userResult.save();
       await slotResult.save();
+      await transactionController.saveTransaction(userResult, slotResult, 'half', sellingPrice)
       await session.commitTransaction();
       return res.status(200).send(userResult);
     }
