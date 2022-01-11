@@ -7,7 +7,7 @@ var mongoose = require("mongoose");
 const conn = require("./database/conn");
 
 const User = require("./models/user");
-const Slot = require("./models/slot");
+const Slot = require("./models/slot").Slot;
 
 
 //* socket emitting
