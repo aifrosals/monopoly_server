@@ -110,11 +110,9 @@ socketIO.on("connection", (userSocket) => {
           console.log('The rent is: ', rent)
           userResult.credits = userResult.credits - rent
           var userResult2 = await User.findByIdAndUpdate({_id: slotResult.owner._id}, {$inc: {'credits': rent}}).session(session)
-         
+          await transactionController.saveTransaction(userResult, slotResult, 'rent', rent)
           console.log('if user steps exists')
-          // console.log(slotResult.all_step_count)
-          // console.log(userResult._id.toString() in slotResult.all_step_count)
-
+         
           //TODO: Remove this first condition later and add {} in the slot schema for counts
           if(slotResult.all_step_count == null) {
             console.log('step count is null')
@@ -547,6 +545,10 @@ try {
   session.endSession()
 }
 })
+
+
+// Transaction
+app.post('/getTransactions', transactionController.getTransactions)
 
 //TODO: the version of socket is 2.4 which is compatible with flutter version, update accrodingly in futrue
 
