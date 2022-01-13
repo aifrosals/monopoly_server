@@ -29,3 +29,4 @@ var slot_names = [
 
 var randomName = getRandomSlotName()
 console.log(randomName)
+
