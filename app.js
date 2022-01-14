@@ -29,8 +29,9 @@ const Slot = require("./models/slot").Slot;
 /** 
  * controller controlling the actions related to their models
  */
-const slotController = require("./controllers/slotController")
-const transactionController = require("./controllers/transactionController")
+const userController = require('./controllers/userController')
+const slotController = require('./controllers/slotController')
+const transactionController = require('./controllers/transactionController')
 
 
 /**
@@ -318,6 +319,9 @@ socketIO.on("connection", (userSocket) => {
       await userResult.save();
       await slotResult.save();
       await session.commitTransaction();
+      /**
+       * Emit update current user for movement is complete successfully
+       */
       userSocket.emit('update_current_user', userResult)
     } catch (error) {
       console.error("User move error", error);
@@ -352,20 +356,26 @@ app.get("/", (req, res) => {
   res.send("Node server is running ");
 });
 
-app.post("/login", async (req, res) => {
-  try {
-    var result = await User.findOne({
-      id: req.body.id,
-    }).exec();
+// app.post("/login", async (req, res) => {
+//   try {
+//     var result = await User.findOne({
+//       id: req.body.id,
+//     }).exec();
 
-    console.log("user login result", result);
-    console.log("login gets called", req.body.id);
-    return res.status(200).send(result);
-  } catch (error) {
-    console.error("login error", error);
-    return res.status(400).send("something went wrong");
-  }
-});
+//     console.log("user login result", result);
+//     console.log("login gets called", req.body.id);
+//     return res.status(200).send(result);
+//   } catch (error) {
+//     console.error("login error", error);
+//     return res.status(400).send("something went wrong");
+//   }
+// });
+
+/**
+ * User Api routes
+ */
+
+app.post('/login')
 
 app.get("/getSlots", async (req, res) => {
   try {
@@ -647,7 +657,7 @@ app.post("/urgentSell", async (req, res) => {
 })
 
 
-// Transaction
+// Transaction Api routes
 app.post('/getTransactions', transactionController.getTransactions)
 
 //TODO: the version of socket is 2.4 which is compatible with flutter version, update accrodingly in futrue
