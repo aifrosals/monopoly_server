@@ -31,7 +31,8 @@ var SlotSchema = new Schema({
         type: Number,
     },
     all_step_count: {
-        type: Object
+        type: Object,
+        default: {}
     },
     status: {
         type: String
