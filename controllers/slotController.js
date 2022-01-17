@@ -5,6 +5,12 @@ const Slot = require('../models/slot').Slot;
 
 const transactionController = require('../controllers/transactionController')
 
+
+/**
+ * Get the selling price of the slot (property) based on level
+ * @param {Number} level 
+ * @returns {Number} selling price
+ */
 exports.getSlotSellingPrice = function (level) {
     let price = 0;
     switch (level) {
@@ -45,12 +51,17 @@ exports.getSlotSellingPrice = function (level) {
       return price;
 }
 
-exports.getRandomPreviousSlot = function (index) {
-  let limit = index - 1
-  let randomPreviousSlot = Math.floor(Math.random() * limit)
-  return randomPreviousSlot
-}
 
+///// exports.getRandomPreviousSlot = function (index) {
+/////   let limit = index - 1
+/////   let randomPreviousSlot = Math.floor(Math.random() * limit)
+/////   return randomPreviousSlot
+//// }
+
+/**
+ * Get credits based on the probability
+ * @returns {Number} credits 
+ */
 exports.getCommunityChestCredits = function () {
   let num = Math.random()
   let credits = 0
@@ -68,6 +79,28 @@ exports.getCommunityChestCredits = function () {
    return credits
 }
 
+/**
+ * 
+ * @param {Object} res 
+ * @returns {Array || String} all slots from slots collection or error message
+ */
+exports.getSlots = async function(req, res) {
+  try {
+    var result = await Slot.find().populate("owner", "id").sort('index');
+    console.log("slots from db", result);
+    return res.status(200).send(result);
+  } catch (error) {
+    console.error("getSlot error", error);
+    return res.status(400).send("something went wrong");
+  }
+}
+
+/**
+ * Upgrade the owned slot
+ * @param {Object} req slotIndex : String and userId : String
+ * @param {Object} res 
+ * @returns {Object || String} returns either uer object or String message with status
+ */
 exports.upgradeSlot = async function (req, res) {
 const session = await mongoose.startSession();
 session.startTransaction();
@@ -166,6 +199,203 @@ try {
 }
 }
 
+/**
+ * Buy a land when no one owns it
+ * @param {Object} req slotIndex : String and userId : String
+ * @param {Object} res 
+ * @returns {Object || String} returns either uer object or String message with status
+ */
+exports.buyLand = async function(req, res) {
+  console.log('buyLand user current slot', req.body.slotIndex)
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    var slotIndex = req.body.slotIndex;
+    var userId = req.body.userId;
+    var slotResult = await Slot.findOne({
+      index: slotIndex,
+    }).session(session);
+    console.log("buyLand slot", slotResult);
+
+    if (slotResult.owner != null) {
+      return res.status(400).send("This place is already bought");
+    } else {
+      var userResult = await User.findOne({
+        id: userId,
+      }).session(session);
+      console.log('buyLand landPrice', slotResult.landPrice)
+      slotResult.owner = userResult;
+      slotResult.name = "Land"
+      userResult.credits = userResult.credits - slotResult.land_price;
+      await userResult.save();
+      await slotResult.save();
+      await transactionController.saveTransaction(userResult, slotResult, 'land', slotResult.landPrice)
+      await session.commitTransaction();
+      return res.status(200).send(userResult);
+    }
+  } catch (error) {
+    console.error("buyLand error", error);
+    await session.abortTransaction()
+    return res.status(402).send("Something went wrong 402");
+  } finally {
+    console.log("finally is being called 3");
+    session.endSession();
+  }
+}
+
+/**
+ * Buy a property from an owner
+ * @param {Object} req slotIndex : String and userId : String
+ * @param {Object} res 
+ * @returns {Object || String} returns either uer object or String message with status
+ */
+exports.buyProperty = async function(req, res) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    var slotIndex = req.body.slotIndex;
+    var userId = req.body.userId;
+
+    var slotResult = await Slot.findOne({
+      index: slotIndex,
+    }).populate("owner", "id").session(session);
+    console.log("urgentSell slot", slotResult)
+    var userResult = await User.findOne({
+      id: userId,
+    }).session(session);
+
+    if (slotResult.owner == null) {
+      return res.status(400).send("You cannot buy this: No owner found");
+    } else if (slotResult.owner._id.toString() == userResult._id.toString()) {
+      return res.send(401).send("You cannot buy this property from yourself")
+    } else {
+
+      var sellingPrice = slotController.getSlotSellingPrice(slotResult.level)
+      if (sellingPrice == 0) {
+        return res.send(402).send('Error occur 402')
+      }
+      var ownerResult = await User.findById(slotResult.owner._id).session(session);
+      console.log('buyProperty landPrice', sellingPrice)
+      ownerResult.credits = ownerResult.credits + sellingPrice;
+      slotResult.owner = userResult;
+      userResult.credits = userResult.credits - sellingPrice;
+      slotResult.all_step_count = {}
+      await ownerResult.save();
+      await userResult.save();
+      await slotResult.save();
+      await transactionController.saveTransaction(userResult, slotResult, 'seller', sellingPrice)
+
+      await session.commitTransaction();
+      return res.status(200).send(userResult);
+    }
+
+  } catch (error) {
+    console.error("buyProperty error", error);
+    await session.abortTransaction()
+    return res.status(402).send("Something went wrong 402");
+  } finally {
+    session.endSession()
+  }
+}
+
+/**
+ * Buy a property at half price set by the owner
+ * @param {Object} req slotIndex : String and userId : String
+ * @param {Object} res 
+ * @returns {Object || String} returns either uer object or String message with status
+ */
+exports.buyPropertyHalf = async function(req, res) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    var slotIndex = req.body.slotIndex;
+    var userId = req.body.userId;
+
+    var slotResult = await Slot.findOne({
+      index: slotIndex,
+    }).populate("owner", "id").session(session);
+    console.log("urgentSell slot", slotResult)
+    var userResult = await User.findOne({
+      id: userId,
+    }).session(session);
+
+    if (slotResult.owner == null) {
+      return res.status(400).send("You cannot buy this: No owner found");
+    } else if (slotResult.owner._id.toString() == userResult._id.toString()) {
+      return res.send(401).send("You cannot buy this property from yourself")
+    } else {
+
+      var sellingPrice = Math.ceil(slotController.getSlotSellingPrice(slotResult.level) / 2)
+      if (sellingPrice == 0) {
+        return res.send(402).send('Error occur 402')
+      }
+      var ownerResult = await User.findById(slotResult.owner._id).session(session);
+      console.log('buyPropertyHlf selling Price', sellingPrice)
+      ownerResult.credits = ownerResult.credits + sellingPrice;
+      slotResult.owner = userResult;
+      userResult.credits = userResult.credits - sellingPrice;
+      slotResult.all_step_count = {}
+      slotResult.status = "";
+      await ownerResult.save();
+      await userResult.save();
+      await slotResult.save();
+      await transactionController.saveTransaction(userResult, slotResult, 'half', sellingPrice)
+      await session.commitTransaction();
+      return res.status(200).send(userResult);
+    }
+
+  } catch (error) {
+    console.error("buyProperty error", error);
+    await session.abortTransaction()
+    return res.status(402).send("Something went wrong 402");
+  } finally {
+    session.endSession()
+  }
+}
+
+/**
+ * Set the slot for urgent sell by the owner
+ * @param {Object} req slotIndex : String and userId : String
+ * @param {Object} res 
+ * @returns {String}  message with status
+ */
+exports.urgentSell = async function(req, res) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    var slotIndex = req.body.slotIndex;
+    var userId = req.body.userId;
+    var slotResult = await Slot.findOne({
+      index: slotIndex,
+    }).populate("owner", "id").session(session);
+    console.log("urgentSell slot", slotResult)
+    var userResult = await User.findOne({
+      id: userId,
+    }).session(session);
+    console.log("slot id", slotResult.owner._id.toString());
+
+    if (slotResult.owner._id.toString() != userResult._id.toString()) {
+      console.log('reached condition')
+      return res.status(400).send("This place is already bought by someone else");
+    } else {
+      slotResult.status = "for_sell"
+      await slotResult.save()
+      await session.commitTransaction()
+      return res.status(200).send("Place is set for urgent sell now")
+    }
+  } catch (error) {
+    console.error("UrgentSell error", error);
+    await session.abortTransaction()
+    return res.status(402).send("Something went wrong 402");
+  } finally {
+    session.endSession()
+  }
+}
+
+
+/**
+ * Getting random name for the slot at level 4
+ */
 var slot_names = [{
   name: 'Business Center',
   type: 'business_center'

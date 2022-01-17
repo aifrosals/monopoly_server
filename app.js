@@ -360,20 +360,6 @@ app.get("/", (req, res) => {
   res.send("Node server is running ");
 });
 
-// app.post("/login", async (req, res) => {
-//   try {
-//     var result = await User.findOne({
-//       id: req.body.id,
-//     }).exec();
-
-//     console.log("user login result", result);
-//     console.log("login gets called", req.body.id);
-//     return res.status(200).send(result);
-//   } catch (error) {
-//     console.error("login error", error);
-//     return res.status(400).send("something went wrong");
-//   }
-// });
 
 /**
  * User Api routes
@@ -381,57 +367,21 @@ app.get("/", (req, res) => {
 
 app.post('/login', userController.login)
 
-app.get("/getSlots", async (req, res) => {
-  try {
-    var result = await Slot.find().populate("owner", "id").sort('index');
-    console.log("slots from db", result);
-    return res.status(200).send(result);
-  } catch (error) {
-    console.error("getSlot error", error);
-    return res.status(400).send("something went wrong");
-  }
-});
+// app.get("/getSlots", async (req, res) => {
+//   try {
+//     var result = await Slot.find().populate("owner", "id").sort('index');
+//     console.log("slots from db", result);
+//     return res.status(200).send(result);
+//   } catch (error) {
+//     console.error("getSlot error", error);
+//     return res.status(400).send("something went wrong");
+//   }
+// });
 
-app.post("/buyLand", async (req, res) => {
-  console.log('buyLand user current slot', req.body.slotIndex)
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    var slotIndex = req.body.slotIndex;
-    var userId = req.body.userId;
-    var slotResult = await Slot.findOne({
-      index: slotIndex,
-    }).session(session);
-    console.log("buyLand slot", slotResult);
+app.get('/getSlots', slotController.getSlots)
 
-    if (slotResult.owner != null) {
-      return res.status(400).send("This place is already bought");
-    } else {
-      var userResult = await User.findOne({
-        id: userId,
-      }).session(session);
-      console.log('buyLand landPrice', slotResult.landPrice)
-      slotResult.owner = userResult;
-      slotResult.name = "Land"
-      userResult.credits = userResult.credits - slotResult.land_price;
-      await userResult.save();
-      await slotResult.save();
-      await transactionController.saveTransaction(userResult, slotResult, 'land', slotResult.landPrice)
-      await session.commitTransaction();
-      return res.status(200).send(userResult);
-    }
-  } catch (error) {
-    console.error("buyLand error", error);
-    await session.abortTransaction()
-    return res.status(402).send("Something went wrong 402");
-  } finally {
-    console.log("finally is being called 3");
-    session.endSession();
-  }
-});
-
-app.post('/upgradeSlot', slotController.upgradeSlot)
-// app.post("/upgradeSlot", async (req, res) => {
+// app.post("/buyLand", async (req, res) => {
+//   console.log('buyLand user current slot', req.body.slotIndex)
 //   const session = await mongoose.startSession();
 //   session.startTransaction();
 //   try {
@@ -439,88 +389,27 @@ app.post('/upgradeSlot', slotController.upgradeSlot)
 //     var userId = req.body.userId;
 //     var slotResult = await Slot.findOne({
 //       index: slotIndex,
-//     }).populate("owner", "id").session(session);
-//     console.log("upgradeSlot slot", slotResult)
-//     var userResult = await User.findOne({
-//       id: userId,
 //     }).session(session);
-//     console.log("slot id", slotResult.owner._id.toString());
-//     console.log("")
+//     console.log("buyLand slot", slotResult);
 
-//     if (slotResult.owner._id.toString() != userResult._id.toString()) {
-//       return res.status(400).send("This place is already bought by someone else");
+//     if (slotResult.owner != null) {
+//       return res.status(400).send("This place is already bought");
 //     } else {
-//       var name;
-//       var price;
-//       var type = slotResult.current_type
-//       var level = slotResult.level
-//       var newType;
-//       var newLevel;
-
-//       switch (level) {
-//         case 0: {
-//           price = 100;
-//           name = 'House';
-//           newType = 'house'
-//           newLevel = 1
-//         }
-//         break;
-//       case 1: {
-//         price = 200;
-//         name = 'Shop';
-//         newType = 'shop'
-//         newLevel = 2
-//       }
-//       break;
-//       case 2: {
-//         price = 400;
-//         name = 'Condo';
-//         newType = 'condo'
-//         newLevel = 3
-//       }
-//       break;
-//       case 3: {
-//         price = 800;
-//         let randomSlot = getRandomSlotName()
-//         name = randomSlot.name;
-//         newType = randomSlot.type;
-//         newLevel = 4
-//       }
-//       break;
-//       case 4: {
-//         price = 1600;
-//         name = 'City';
-//         newType = 'city'
-//         newLevel = 5
-//       }
-//       break;
-//       default: {}
-//       break;
-//       }
-
-//       if (price == null || name == null || newType == null || newLevel == null) {
-//         return res.status(401).send('Something went wrong')
-//       }
-
-//       slotResult.updated_price = price
-//       slotResult.name = name
-//       slotResult.current_type = newType
-//       slotResult.level = newLevel
-
-//       console.log('updated slot', slotResult)
-
+//       var userResult = await User.findOne({
+//         id: userId,
+//       }).session(session);
+//       console.log('buyLand landPrice', slotResult.landPrice)
 //       slotResult.owner = userResult;
-
-//       userResult.credits = userResult.credits - slotResult.updated_price;
+//       slotResult.name = "Land"
+//       userResult.credits = userResult.credits - slotResult.land_price;
 //       await userResult.save();
 //       await slotResult.save();
-//       await transactionController.saveTransaction(userResult, slotResult, 'upgrade', price)
-
+//       await transactionController.saveTransaction(userResult, slotResult, 'land', slotResult.landPrice)
 //       await session.commitTransaction();
 //       return res.status(200).send(userResult);
 //     }
 //   } catch (error) {
-//     console.error("upgradeSlot error", error);
+//     console.error("buyLand error", error);
 //     await session.abortTransaction()
 //     return res.status(402).send("Something went wrong 402");
 //   } finally {
@@ -529,143 +418,150 @@ app.post('/upgradeSlot', slotController.upgradeSlot)
 //   }
 // });
 
+app.post('/buyLand', slotController.buyLand)
+app.post('/buyProperty', slotController.buyProperty)
+app.post('/buyPropertyHalf',slotController.buyPropertyHalf)
+app.post('/upgradeSlot', slotController.upgradeSlot)
+app.post('/urgentSell', slotController.urgentSell)
+
+
 //* buy property is buying the property from an owner
-app.post("/buyProperty", async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    var slotIndex = req.body.slotIndex;
-    var userId = req.body.userId;
+// app.post("/buyProperty", async (req, res) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+//   try {
+//     var slotIndex = req.body.slotIndex;
+//     var userId = req.body.userId;
 
-    var slotResult = await Slot.findOne({
-      index: slotIndex,
-    }).populate("owner", "id").session(session);
-    console.log("urgentSell slot", slotResult)
-    var userResult = await User.findOne({
-      id: userId,
-    }).session(session);
+//     var slotResult = await Slot.findOne({
+//       index: slotIndex,
+//     }).populate("owner", "id").session(session);
+//     console.log("urgentSell slot", slotResult)
+//     var userResult = await User.findOne({
+//       id: userId,
+//     }).session(session);
 
-    if (slotResult.owner == null) {
-      return res.status(400).send("You cannot buy this: No owner found");
-    } else if (slotResult.owner._id.toString() == userResult._id.toString()) {
-      return res.send(401).send("You cannot buy this property from yourself")
-    } else {
+//     if (slotResult.owner == null) {
+//       return res.status(400).send("You cannot buy this: No owner found");
+//     } else if (slotResult.owner._id.toString() == userResult._id.toString()) {
+//       return res.send(401).send("You cannot buy this property from yourself")
+//     } else {
 
-      var sellingPrice = slotController.getSlotSellingPrice(slotResult.level)
-      if (sellingPrice == 0) {
-        return res.send(402).send('Error occur 402')
-      }
-      var ownerResult = await User.findById(slotResult.owner._id).session(session);
-      console.log('buyProperty landPrice', sellingPrice)
-      ownerResult.credits = ownerResult.credits + sellingPrice;
-      slotResult.owner = userResult;
-      userResult.credits = userResult.credits - sellingPrice;
-      slotResult.all_step_count = {}
-      await ownerResult.save();
-      await userResult.save();
-      await slotResult.save();
-      await transactionController.saveTransaction(userResult, slotResult, 'seller', sellingPrice)
+//       var sellingPrice = slotController.getSlotSellingPrice(slotResult.level)
+//       if (sellingPrice == 0) {
+//         return res.send(402).send('Error occur 402')
+//       }
+//       var ownerResult = await User.findById(slotResult.owner._id).session(session);
+//       console.log('buyProperty landPrice', sellingPrice)
+//       ownerResult.credits = ownerResult.credits + sellingPrice;
+//       slotResult.owner = userResult;
+//       userResult.credits = userResult.credits - sellingPrice;
+//       slotResult.all_step_count = {}
+//       await ownerResult.save();
+//       await userResult.save();
+//       await slotResult.save();
+//       await transactionController.saveTransaction(userResult, slotResult, 'seller', sellingPrice)
 
-      await session.commitTransaction();
-      return res.status(200).send(userResult);
-    }
+//       await session.commitTransaction();
+//       return res.status(200).send(userResult);
+//     }
 
-  } catch (error) {
-    console.error("buyProperty error", error);
-    await session.abortTransaction()
-    return res.status(402).send("Something went wrong 402");
-  } finally {
-    session.endSession()
-  }
-})
+//   } catch (error) {
+//     console.error("buyProperty error", error);
+//     await session.abortTransaction()
+//     return res.status(402).send("Something went wrong 402");
+//   } finally {
+//     session.endSession()
+//   }
+// })
 
-app.post("/buyPropertyHalf", async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    var slotIndex = req.body.slotIndex;
-    var userId = req.body.userId;
+// app.post("/buyPropertyHalf", async (req, res) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+//   try {
+//     var slotIndex = req.body.slotIndex;
+//     var userId = req.body.userId;
 
-    var slotResult = await Slot.findOne({
-      index: slotIndex,
-    }).populate("owner", "id").session(session);
-    console.log("urgentSell slot", slotResult)
-    var userResult = await User.findOne({
-      id: userId,
-    }).session(session);
+//     var slotResult = await Slot.findOne({
+//       index: slotIndex,
+//     }).populate("owner", "id").session(session);
+//     console.log("urgentSell slot", slotResult)
+//     var userResult = await User.findOne({
+//       id: userId,
+//     }).session(session);
 
-    if (slotResult.owner == null) {
-      return res.status(400).send("You cannot buy this: No owner found");
-    } else if (slotResult.owner._id.toString() == userResult._id.toString()) {
-      return res.send(401).send("You cannot buy this property from yourself")
-    } else {
+//     if (slotResult.owner == null) {
+//       return res.status(400).send("You cannot buy this: No owner found");
+//     } else if (slotResult.owner._id.toString() == userResult._id.toString()) {
+//       return res.send(401).send("You cannot buy this property from yourself")
+//     } else {
 
-      var sellingPrice = Math.ceil(slotController.getSlotSellingPrice(slotResult.level) / 2)
-      if (sellingPrice == 0) {
-        return res.send(402).send('Error occur 402')
-      }
-      var ownerResult = await User.findById(slotResult.owner._id).session(session);
-      console.log('buyPropertyHlf selling Price', sellingPrice)
-      ownerResult.credits = ownerResult.credits + sellingPrice;
-      slotResult.owner = userResult;
-      userResult.credits = userResult.credits - sellingPrice;
-      slotResult.all_step_count = {}
-      slotResult.status = "";
-      await ownerResult.save();
-      await userResult.save();
-      await slotResult.save();
-      await transactionController.saveTransaction(userResult, slotResult, 'half', sellingPrice)
-      await session.commitTransaction();
-      return res.status(200).send(userResult);
-    }
+//       var sellingPrice = Math.ceil(slotController.getSlotSellingPrice(slotResult.level) / 2)
+//       if (sellingPrice == 0) {
+//         return res.send(402).send('Error occur 402')
+//       }
+//       var ownerResult = await User.findById(slotResult.owner._id).session(session);
+//       console.log('buyPropertyHlf selling Price', sellingPrice)
+//       ownerResult.credits = ownerResult.credits + sellingPrice;
+//       slotResult.owner = userResult;
+//       userResult.credits = userResult.credits - sellingPrice;
+//       slotResult.all_step_count = {}
+//       slotResult.status = "";
+//       await ownerResult.save();
+//       await userResult.save();
+//       await slotResult.save();
+//       await transactionController.saveTransaction(userResult, slotResult, 'half', sellingPrice)
+//       await session.commitTransaction();
+//       return res.status(200).send(userResult);
+//     }
 
-  } catch (error) {
-    console.error("buyProperty error", error);
-    await session.abortTransaction()
-    return res.status(402).send("Something went wrong 402");
-  } finally {
-    session.endSession()
-  }
-})
+//   } catch (error) {
+//     console.error("buyProperty error", error);
+//     await session.abortTransaction()
+//     return res.status(402).send("Something went wrong 402");
+//   } finally {
+//     session.endSession()
+//   }
+// })
 
-app.post("/urgentSell", async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    var slotIndex = req.body.slotIndex;
-    var userId = req.body.userId;
-    var slotResult = await Slot.findOne({
-      index: slotIndex,
-    }).populate("owner", "id").session(session);
-    console.log("urgentSell slot", slotResult)
-    var userResult = await User.findOne({
-      id: userId,
-    }).session(session);
-    console.log("slot id", slotResult.owner._id.toString());
+// app.post("/urgentSell", async (req, res) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+//   try {
+//     var slotIndex = req.body.slotIndex;
+//     var userId = req.body.userId;
+//     var slotResult = await Slot.findOne({
+//       index: slotIndex,
+//     }).populate("owner", "id").session(session);
+//     console.log("urgentSell slot", slotResult)
+//     var userResult = await User.findOne({
+//       id: userId,
+//     }).session(session);
+//     console.log("slot id", slotResult.owner._id.toString());
 
-    if (slotResult.owner._id.toString() != userResult._id.toString()) {
-      console.log('reached condition')
-      return res.status(400).send("This place is already bought by someone else");
-    } else {
-      slotResult.status = "for_sell"
-      await slotResult.save()
-      await session.commitTransaction()
-      return res.status(200).send("Place is set for urgent sell now")
-    }
-  } catch (error) {
-    console.error("UrgentSell error", error);
-    await session.abortTransaction()
-    return res.status(402).send("Something went wrong 402");
-  } finally {
-    session.endSession()
-  }
-})
+//     if (slotResult.owner._id.toString() != userResult._id.toString()) {
+//       console.log('reached condition')
+//       return res.status(400).send("This place is already bought by someone else");
+//     } else {
+//       slotResult.status = "for_sell"
+//       await slotResult.save()
+//       await session.commitTransaction()
+//       return res.status(200).send("Place is set for urgent sell now")
+//     }
+//   } catch (error) {
+//     console.error("UrgentSell error", error);
+//     await session.abortTransaction()
+//     return res.status(402).send("Something went wrong 402");
+//   } finally {
+//     session.endSession()
+//   }
+// })
 
 
 // Transaction Api routes
 app.post('/getTransactions', transactionController.getTransactions)
 
-//TODO: the version of socket is 2.4 which is compatible with flutter version, update accrodingly in futrue
+//TODO: the version of socket is 2.4 which is compatible with flutter version, update accordingly in future
 
 
 //TODO: put this into another helper file
