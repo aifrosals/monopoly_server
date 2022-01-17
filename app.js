@@ -179,7 +179,7 @@ socketIO.on("connection", (userSocket) => {
           console.log('id of the owner', slotResult.owner._id.toString())
           console.log('owner of the land', slotResult.owner)
           var rent = Math.ceil(slotResult.updated_price * 10 / 100)
-          if(userResult.credits < rent) {
+          if(userResult.credits < rent && userResult.credits != 0) {
             rent = Math.ceil(userResult.credits * 30 / 100)
           }
           console.log('The rent is: ', rent)
