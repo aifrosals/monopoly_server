@@ -18,10 +18,16 @@ var UserSchema = new Schema({
   },
   credits: {
     type: Number,
+    default: 0
+  },
+  dice: {
+    type: Number,
+    default: 0
   },
   loops: {
     type: Number,
   }
+
 },  {timestamps: true});
 
 var User = mongoose.model('users', UserSchema);

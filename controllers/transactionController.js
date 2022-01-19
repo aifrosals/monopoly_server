@@ -3,7 +3,7 @@ const User = require('../models/user')
 const Slot = require('../models/slot')
 const Transaction = require('../models/transactions')
 
-exports.saveTransaction = async function (user, slot, type, amount) {
+exports.saveTransaction = async function (user, slot, type, amount, owner) {
   try {
     var transaction = new Transaction()
 
@@ -12,21 +12,22 @@ exports.saveTransaction = async function (user, slot, type, amount) {
     transaction.child = slot
     transaction.amount = amount
     transaction.buyer_name = user.id
+    transaction.actor = user
 
     if (type == 'land') {
       transaction.type = 'land'
     }
     else if (type == 'seller') {
-      transaction.seller = slot.owner
-      transaction.seller_name = slot.owner.id
+      transaction.seller = owner
+      transaction.seller_name = owner.id
       transaction.type = 'seller'
     }
     else if (type == 'upgrade') {
       transaction.type = 'upgrade'
     }
     else if (type == 'half') {
-      transaction.seller = slot.owner
-      transaction.seller_name = slot.owner.id
+      transaction.seller = owner
+      transaction.seller_name = owner.id
       transaction.type = 'half'
     }
 
@@ -34,6 +35,12 @@ exports.saveTransaction = async function (user, slot, type, amount) {
       transaction.seller = slot.owner
       transaction.seller_name = slot.owner.id
       transaction.type = 'rent'
+    }
+    else if(type == 'reward') {
+      transaction.type = 'reward'
+    }
+    else if(type == 'chest') {
+      transaction.type = 'chest'
     }
 
     await transaction.save()
@@ -51,7 +58,7 @@ exports.getTransactions = async function (req, res) {
 
   try {
     var userId = mongoose.Types.ObjectId(req.body.userId)
-    let transactions = await Transaction.find({ $or: [{ buyer: userId }, { buyer: userId, type: 'rent' }, { seller: userId, type: 'rent' }] }).populate({ path: 'child', populate: { path: 'owner', model: 'users' } }).sort({ createdAt: -1 });
+    let transactions = await Transaction.find({ $or: [{ buyer: userId }, { buyer: userId, type: 'rent' }, { seller: userId, type: 'rent' }, {seller: userId, type: 'seller'}, {seller: userId, type:'half'}] }).populate({ path: 'child', populate: { path: 'owner', model: 'users' } }).sort({ createdAt: -1 });
     console.log('getTransaction transactions', transactions)
     return res.status(200).send(transactions)
   } catch (error) {

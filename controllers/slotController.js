@@ -11,7 +11,7 @@ const transactionController = require('../controllers/transactionController')
  * @param {Number} level 
  * @returns {Number} selling price
  */
-exports.getSlotSellingPrice = function (level) {
+getSlotSellingPrice = function (level) {
     let price = 0;
     switch (level) {
         case 0:
@@ -52,11 +52,7 @@ exports.getSlotSellingPrice = function (level) {
 }
 
 
-///// exports.getRandomPreviousSlot = function (index) {
-/////   let limit = index - 1
-/////   let randomPreviousSlot = Math.floor(Math.random() * limit)
-/////   return randomPreviousSlot
-//// }
+
 
 /**
  * Get credits based on the probability
@@ -79,6 +75,8 @@ exports.getCommunityChestCredits = function () {
    return credits
 }
 
+
+//TODO: Use lean for more performance
 /**
  * 
  * @param {Object} res 
@@ -270,7 +268,7 @@ exports.buyProperty = async function(req, res) {
       return res.send(401).send("You cannot buy this property from yourself")
     } else {
 
-      var sellingPrice = slotController.getSlotSellingPrice(slotResult.level)
+      var sellingPrice = getSlotSellingPrice(slotResult.level)
       if (sellingPrice == 0) {
         return res.send(402).send('Error occur 402')
       }
@@ -283,7 +281,7 @@ exports.buyProperty = async function(req, res) {
       await ownerResult.save();
       await userResult.save();
       await slotResult.save();
-      await transactionController.saveTransaction(userResult, slotResult, 'seller', sellingPrice)
+      await transactionController.saveTransaction(userResult, slotResult, 'seller', sellingPrice, ownerResult)
 
       await session.commitTransaction();
       return res.status(200).send(userResult);
@@ -325,7 +323,7 @@ exports.buyPropertyHalf = async function(req, res) {
       return res.send(401).send("You cannot buy this property from yourself")
     } else {
 
-      var sellingPrice = Math.ceil(slotController.getSlotSellingPrice(slotResult.level) / 2)
+      var sellingPrice = Math.ceil(getSlotSellingPrice(slotResult.level) / 2)
       if (sellingPrice == 0) {
         return res.send(402).send('Error occur 402')
       }
@@ -339,7 +337,7 @@ exports.buyPropertyHalf = async function(req, res) {
       await ownerResult.save();
       await userResult.save();
       await slotResult.save();
-      await transactionController.saveTransaction(userResult, slotResult, 'half', sellingPrice)
+      await transactionController.saveTransaction(userResult, slotResult, 'half', sellingPrice, ownerResult)
       await session.commitTransaction();
       return res.status(200).send(userResult);
     }

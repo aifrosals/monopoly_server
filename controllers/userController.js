@@ -14,3 +14,14 @@ exports.login = async function(req, res) {
     return res.status(400).send("something went wrong");
   }
 }
+
+exports.getDailyDice = async function() {
+  try {
+  var result = await User.updateMany({},  { $inc: {
+    'dice': 5 }
+  })
+  console.log('dices have been updated', result)
+} catch(error) {
+  console.error('UserController getDailyDice error', error)
+}
+}
