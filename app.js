@@ -300,14 +300,14 @@ socketIO.on("connection", (userSocket) => {
           if (slotResult.all_step_count == null) {
             slotResult.all_step_count = {}
             slotResult.all_step_count[userResult._id.toString()] = 1
-            userSocket.emit('reward_star', 'reward_star')
+           // userSocket.emit('reward_star', 'reward_star')
           } else if (userResult._id.toString() in slotResult.all_step_count == false) {
             slotResult.all_step_count[userResult._id.toString()] = 1
-            userSocket.emit('reward_star', 'reward_star')
+          //  userSocket.emit('reward_star', 'reward_star')
 
           } else {
             slotResult.all_step_count[userResult._id.toString()] = slotResult.all_step_count[userResult._id.toString()] + 1
-            userSocket.emit('reward_star', 'reward_star')
+          //  userSocket.emit('reward_star', 'reward_star')
 
           }
           if (slotResult.all_step_count[userResult._id.toString()] == 5) {
@@ -316,6 +316,9 @@ socketIO.on("connection", (userSocket) => {
             slotResult.all_step_count[userResult._id.toString()] = 0
             await transactionController.saveTransaction(userResult, slotResult, 'reward', reward)
             userSocket.emit('reward', 'Congratulations you gain 50 credits')
+          }
+          else {
+            userSocket.emit('reward_star', 'reward_star');
           }
         } 
         
