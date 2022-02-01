@@ -390,6 +390,39 @@ exports.urgentSell = async function(req, res) {
   }
 }
 
+async function getChance() {
+  try {
+ var chance = getRandomInt()
+ var response = '';
+ switch(chance) {
+   case 1: {
+
+     break;
+   }
+   case 2: {
+    break;
+  }
+  case 3: {
+    break;
+  }
+  case 4: {
+    break;
+  }
+  case 5: {
+    break;
+  }
+  case 6: {
+    break;
+  }
+}  
+ } catch(error) {
+   console.log('getChance error', error)
+ }
+}
+
+
+
+
 
 /**
  * Getting random name for the slot at level 4
@@ -407,4 +440,51 @@ var slot_names = [{
 function getRandomSlotName() {
 let i = (Math.random() >= 0.5) ? 1 : 0
 return slot_names[i]
+}
+
+/**
+ * Function to get random chance
+ * returns an integer between the range
+ * @param {int} min 
+ * @param {int} max 
+ * @returns {int} 
+ */
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Chance functions
+
+async function loseTenPercent(userResult) {
+try {
+   var tenPercentCredits = getTenPercent(userResult.credits)
+   var result = await User.findByIdAndUpdate({_id: userResult._id},  {
+    $inc: {
+      'credits': -tenPercentCredits
+    }
+  })
+  return `You have lost ${tenPercentCredits} credits`
+} catch(error) {
+  console.error('slotController loseTenPercent error', error) 
+  throw error
+}
+}
+
+async function stealCreditsRandomly(userResult) {
+  try {
+     var userResult2 = User.aggregate([{_id: {$ne: userResult._id }}, {$sample: {size:1}}])
+     var tenPercentCredits = getTenPercent(userResult2.credits)
+     userResult2.credits = userResult2.credits - tenPercentCredits
+     userResult.credits = userResult.credits + tenPercentCredits
+     await userResult2.save()
+     await userResult1.save()
+  } catch(error) {
+    console.error('slotController stealCreditsRandomly error', error) 
+  }
+}
+
+function getTenPercent(credits) {
+  return Math.ceil(credits * 10 / 100)
 }
