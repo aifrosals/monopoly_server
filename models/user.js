@@ -26,7 +26,8 @@ var UserSchema = new Schema({
   },
   loops: {
     type: Number,
-  }
+  },
+  shiel
 
 },  {timestamps: true});
 
