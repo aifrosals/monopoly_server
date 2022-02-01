@@ -31,7 +31,10 @@ var TransactionSchema = new Schema({
     },
     amount: {
         type: Number
-    }
+    },
+    text: {
+        type: String
+    },
 }, {timestamps: true})
 
 var Transaction = mongoose.model('transactions', TransactionSchema)
