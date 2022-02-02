@@ -390,13 +390,13 @@ exports.urgentSell = async function(req, res) {
   }
 }
 
-async function getChance() {
+async function getChance(userResult) {
   try {
  var chance = getRandomInt()
  var response = '';
  switch(chance) {
    case 1: {
-
+     response = await loseTenPercent(userResult)
      break;
    }
    case 2: {
@@ -465,7 +465,10 @@ try {
       'credits': -tenPercentCredits
     }
   })
-  return `You have lost ${tenPercentCredits} credits`
+  return { 
+    effect: 'scammed',
+   message: `You have lost ${tenPercentCredits} credits`
+  };
 } catch(error) {
   console.error('slotController loseTenPercent error', error) 
   throw error
@@ -474,7 +477,7 @@ try {
 
 async function stealCreditsRandomly(userResult) {
   try {
-     var userResult2 = User.aggregate([{_id: {$ne: userResult._id }}, {$sample: {size:1}}])
+     var userResult2 = await User.aggregate([{$match: $and[{_id: {$ne: userResult._id }}, {"shield.active": false}]}, {$sample: {size:1}}])
      var tenPercentCredits = getTenPercent(userResult2.credits)
      userResult2.credits = userResult2.credits - tenPercentCredits
      userResult.credits = userResult.credits + tenPercentCredits
@@ -483,6 +486,10 @@ async function stealCreditsRandomly(userResult) {
   } catch(error) {
     console.error('slotController stealCreditsRandomly error', error) 
   }
+}
+//TODO: Also make cannot be kicked
+async function getShield(userResult) {
+   var result = await User.findByIdAndUpdate({_id: userResult._id}, {"shield.active": true})  
 }
 
 function getTenPercent(credits) {

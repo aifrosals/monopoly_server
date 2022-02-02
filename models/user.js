@@ -1,6 +1,8 @@
 var mongoose = require('mongoose')
 var Schema = mongoose.Schema
 
+const ShieldSchema = require('./shield')
+
 var UserSchema = new Schema({
   id: {
     type: String,
@@ -27,7 +29,7 @@ var UserSchema = new Schema({
   loops: {
     type: Number,
   },
-  shiel
+  shield: ShieldSchema
 
 },  {timestamps: true});
 

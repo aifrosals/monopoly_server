@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 var Schema = mongoose.Schema
 
 const ShieldSchema = new Schema({
-    value: {
+    active: {
         type: Boolean,
         default: false
     },
