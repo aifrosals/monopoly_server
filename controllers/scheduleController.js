@@ -2,11 +2,16 @@ const schedule = require('node-schedule')
 const userController = require('./userController')
 const User = require('../models/user')
 
+const conn = require('../database/conn')
+
 const job = schedule.scheduleJob('* * * * *', function() {
     console.log('job working one minute')
 })
 
-const disableShieldJob = schedule.scheduleJob('1 * * * *', async function() {
+const disableShieldJob = schedule.scheduleJob('1 * * * *', disableShield)
+
+async function disableShield() {
+    await conn.main()
     try {
         console.log('hourly activated')
         var userResult = await User.find({"shield.active": true})
@@ -25,8 +30,8 @@ const disableShieldJob = schedule.scheduleJob('1 * * * *', async function() {
         }
         }
       } catch(error) {
-        console.log('shield schedule error')
+        console.log('shield schedule error', error)
       }
-})
+}
 
 //const exampleJob = schedule.scheduleJob('* * * * *', userController.getDailyDice)

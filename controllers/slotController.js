@@ -400,12 +400,15 @@ async function getChance(userResult) {
      break;
    }
    case 2: {
+     response = await stealCreditsRandomly(userResult)
     break;
   }
   case 3: {
+     response = await getShield(userResult)
     break;
   }
   case 4: {
+    response = await get2xBonus(userResult)
     break;
   }
   case 5: {
@@ -459,16 +462,16 @@ function getRandomInt(min, max) {
 
 async function loseTenPercent(userResult) {
 try {
-   var tenPercentCredits = getTenPercent(userResult.credits)
+   let tenPercentCredits = getTenPercent(userResult.credits)
    var result = await User.findByIdAndUpdate({_id: userResult._id},  {
     $inc: {
       'credits': -tenPercentCredits
     }
   })
   return { 
-    effect: 'scammed',
+    effect: 'scam',
    message: `You have lost ${tenPercentCredits} credits`
-  };
+  }
 } catch(error) {
   console.error('slotController loseTenPercent error', error) 
   throw error
@@ -478,18 +481,39 @@ try {
 async function stealCreditsRandomly(userResult) {
   try {
      var userResult2 = await User.aggregate([{$match: $and[{_id: {$ne: userResult._id }}, {"shield.active": false}]}, {$sample: {size:1}}])
-     var tenPercentCredits = getTenPercent(userResult2.credits)
+     let tenPercentCredits = getTenPercent(userResult2.credits)
      userResult2.credits = userResult2.credits - tenPercentCredits
      userResult.credits = userResult.credits + tenPercentCredits
      await userResult2.save()
-     await userResult1.save()
+     await userResult.save()
+     return { 
+      effect: 'steal',
+     message: `You steal ${tenPercentCredits} credits from user ${userResult2.id}`
+    };
   } catch(error) {
     console.error('slotController stealCreditsRandomly error', error) 
+    throw error
   }
 }
 //TODO: Also make cannot be kicked
 async function getShield(userResult) {
+  try {
    var result = await User.findByIdAndUpdate({_id: userResult._id}, {"shield.active": true})  
+   return { 
+    effect: 'shield',
+   message: `Shield is activated`
+  }
+} catch(error) {
+  console.log('getShield error', error)
+}
+}
+
+async function get2xBonus(userResult) {
+  var result = await User.findByIdAndUpdate({_id: userResult._id}, {"bonus.active": true})
+  return { 
+    effect: 'bonus',
+   message: `You are getting 2x bonus for next 2 dice rolls`
+  }
 }
 
 function getTenPercent(credits) {

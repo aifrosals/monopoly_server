@@ -154,8 +154,9 @@ socketIO.on("connection", (userSocket) => {
    * Depending upon the slot initial and current type and
    * various factors triggers respective functionality.
    */
-  userSocket.on("userMove", async (data) => {
-    console.log("user moved", data);
+  userSocket.on("userMove", async (userData) => {
+    console.log("user moved", userData);
+    var data = userData.user
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -339,6 +340,18 @@ socketIO.on("connection", (userSocket) => {
 
       //* Mark all_step_count Modified so the object is updated in the database
       slotResult.markModified("all_step_count")
+      
+      var bonusFactor = 1
+
+      if(userResult.bonus != null && userResult.bonus.active == true && userResult.bonus.moves > 0) {
+        userResult.bonus.moves = userResult.bonus.moves - 1
+        bonusFactor = 2
+        if(userResult.bonus.moves == 0) {
+          userResult.bonus.active = false
+        }
+      }
+
+      uerResult.credits = userResult.credits + (userData.diceFace * bonusFactor)
       await userResult.save();
       await slotResult.save();
       await session.commitTransaction();
