@@ -34,6 +34,7 @@ var SlotSchema = new Schema({
         type: Object,
         default: {}
     },
+    //* the status is for_sell
     status: {
         type: String
     },

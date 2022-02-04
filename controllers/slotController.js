@@ -390,7 +390,7 @@ exports.urgentSell = async function(req, res) {
   }
 }
 
-async function getChance(userResult) {
+exports.getChance = async function(userResult) {
   try {
  var chance = getRandomInt()
  var response = '';
@@ -412,14 +412,22 @@ async function getChance(userResult) {
     break;
   }
   case 5: {
+    response = await forceSell(userResult)
     break;
   }
   case 6: {
+    response = gotoChallenge()
     break;
   }
 }  
+   var user = await User.findOne({_id: userResult._id})
+   return {
+     'ur': user,
+     'response': response
+   }
  } catch(error) {
    console.log('getChance error', error)
+   throw error
  }
 }
 
@@ -495,27 +503,66 @@ async function stealCreditsRandomly(userResult) {
     throw error
   }
 }
+
+function getTenPercent(credits) {
+  return Math.ceil(credits * 10 / 100)
+}
+
 //TODO: Also make cannot be kicked
 async function getShield(userResult) {
   try {
-   var result = await User.findByIdAndUpdate({_id: userResult._id}, {"shield.active": true})  
+   var result = await User.findByIdAndUpdate({_id: userResult._id}, {$set:{"shield.active": true,"shield.date": new Date()}})
    return { 
     effect: 'shield',
    message: `Shield is activated`
   }
 } catch(error) {
   console.log('getShield error', error)
+  throw error
 }
 }
 
 async function get2xBonus(userResult) {
-  var result = await User.findByIdAndUpdate({_id: userResult._id}, {"bonus.active": true})
+  try {
+  var result = await User.findByIdAndUpdate({_id: userResult._id}, {$set:{"bonus.active": true,"bonus.moves": 2}})
   return { 
     effect: 'bonus',
    message: `You are getting 2x bonus for next 2 dice rolls`
   }
+} catch(error) {
+  console.log('get2xBonus error', error)
+  throw error
+}
 }
 
-function getTenPercent(credits) {
-  return Math.ceil(credits * 10 / 100)
+async function forceSell(userResult) {
+ try {
+   var slotResult = await Slot.findOne({$and:[{owner:userResult}, {status:{$ne: "for_sell"}}]})
+   if(slotResult != null) {
+    slotResult.status = 'for_sell'
+    await slotResult.save()   
+    return {
+      effect: 'force_sell',
+      message: `Your ${slotResult.name} at number ${slotResult.index} is set for sale now`
+    }    
+   }
+   else {
+     return {
+        effect: 'force_sell',
+       message: `You do not have any property to set for sell`
+      }      
+   }
+ } catch(error) {
+   console.error('forceSell error', error)
+   throw error
+ } 
 }
+
+function gotoChallenge() {
+  return {
+    effect: 'challenge',
+   message: `go to challenge`
+  }   
+}
+
+

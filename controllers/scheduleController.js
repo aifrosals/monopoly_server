@@ -11,7 +11,7 @@ const job = schedule.scheduleJob('* * * * *', function() {
 const disableShieldJob = schedule.scheduleJob('1 * * * *', disableShield)
 
 async function disableShield() {
-    await conn.main()
+    // await conn.main()
     try {
         console.log('hourly activated')
         var userResult = await User.find({"shield.active": true})
@@ -20,7 +20,7 @@ async function disableShield() {
         const oneDay = 24 * 60 * 60 * 1000 // hours*minutes*seconds*milliseconds
         const firstDate = user.shield.date
         console.log('shield activation date', firstDate)
-        const secondDate = new Date(2022, 1, 6)
+        const secondDate = new Date()
         const diffDays = Math.round(Math.abs((firstDate - secondDate) / oneDay))
         console.log(diffDays)
         if(diffDays >= 3) {

@@ -1,6 +1,7 @@
 const User = require('../models/user')
 const slotController = require('../controllers/slotController')
 const conn = require('../database/conn')
+const Slot = require('../models/slot').Slot
 
 
 async function testGetRandomUserExceptCurrent() {
@@ -55,5 +56,17 @@ async function offShield() {
 }
 }
 
- offShield()
+
+async function forceSell(userResult) {
+  try {
+    await conn.main()
+    var userResult = await User.findOne({id: 'user1'})
+    var slotResult = await Slot.findOne({$and:[{owner:userResult}, {status: "dkf"}]})
+    console.log('slot result', slotResult)
+  } catch(error) {
+ 
+  }
+ }
+
+ forceSell()
 

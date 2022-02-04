@@ -332,6 +332,11 @@ socketIO.on("connection", (userSocket) => {
           await transactionController.saveTransaction(userResult, slotResult, 'chest', cred)
           userSocket.emit('chest', `Congratulations you gain ${cred} credits from Community Chest`)
         }
+
+        else if(slotResult.initial_type == "chance") {
+          let response = slotController.getChance(userResult)
+          userSocket.emit('chance', response)
+        }
       }
 
       console.log('user loops', data.loops)
@@ -351,7 +356,7 @@ socketIO.on("connection", (userSocket) => {
         }
       }
 
-      uerResult.credits = userResult.credits + (userData.diceFace * bonusFactor)
+      userResult.credits = userResult.credits + (userData.diceFace * bonusFactor)
       await userResult.save();
       await slotResult.save();
       await session.commitTransaction();
