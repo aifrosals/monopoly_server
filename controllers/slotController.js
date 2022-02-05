@@ -392,34 +392,35 @@ exports.urgentSell = async function(req, res) {
 
 exports.getChance = async function(userResult) {
   try {
- var chance = getRandomInt()
+ var chance = getRandomInt(1,6)
  var response = '';
- switch(chance) {
-   case 1: {
-     response = await loseTenPercent(userResult)
-     break;
-   }
-   case 2: {
-     response = await stealCreditsRandomly(userResult)
-    break;
-  }
-  case 3: {
-     response = await getShield(userResult)
-    break;
-  }
-  case 4: {
-    response = await get2xBonus(userResult)
-    break;
-  }
-  case 5: {
-    response = await forceSell(userResult)
-    break;
-  }
-  case 6: {
-    response = gotoChallenge()
-    break;
-  }
-}  
+ response = await stealCreditsRandomly(userResult)
+//  switch(chance) {
+//    case 1: {
+//      response = await loseTenPercent(userResult)
+//      break;
+//    }
+//    case 2: {
+//      response = await stealCreditsRandomly(userResult)
+//     break;
+//   }
+//   case 3: {
+//      response = await getShield(userResult)
+//     break;
+//   }
+//   case 4: {
+//     response = await get2xBonus(userResult)
+//     break;
+//   }
+//   case 5: {
+//     response = await forceSell(userResult)
+//     break;
+//   }
+//   case 6: {
+//     response = gotoChallenge()
+//     break;
+//   }
+//}  
    var user = await User.findOne({_id: userResult._id})
    return {
      'ur': user,
@@ -488,16 +489,34 @@ try {
 
 async function stealCreditsRandomly(userResult) {
   try {
-     var userResult2 = await User.aggregate([{$match: $and[{_id: {$ne: userResult._id }}, {"shield.active": false}]}, {$sample: {size:1}}])
-     let tenPercentCredits = getTenPercent(userResult2.credits)
-     userResult2.credits = userResult2.credits - tenPercentCredits
-     userResult.credits = userResult.credits + tenPercentCredits
-     await userResult2.save()
-     await userResult.save()
+     var userResultLean = await User.aggregate([{$match: {$and:[{_id: {$ne: userResult._id }}, {"shield.active": false}]}}, {$sample: {size:1}}])
+      console.log('stealCredits result', userResultLean)
+     if(userResultLean != null) {
+      let tenPercentCredits = getTenPercent(userResultLean[0].credits)
+     
+
+      var result1 = await User.findByIdAndUpdate(userResult._id, {
+        $inc: {
+          'credits': tenPercentCredits
+        }
+      })
+       var result2 = await User.findByIdAndUpdate(userResultLean[0]._id, {
+        $inc: {
+          'credits': -tenPercentCredits
+        }
+      })
+
      return { 
       effect: 'steal',
-     message: `You steal ${tenPercentCredits} credits from user ${userResult2.id}`
+     message: `You steal ${tenPercentCredits} credits from user ${userResultLean[0].id}`
     };
+  }
+  else {
+    return { 
+      effect: 'steal',
+     message: `Nothing to steal`
+    };
+  }
   } catch(error) {
     console.error('slotController stealCreditsRandomly error', error) 
     throw error

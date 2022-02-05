@@ -334,7 +334,9 @@ socketIO.on("connection", (userSocket) => {
         }
 
         else if(slotResult.initial_type == "chance") {
-          let response = slotController.getChance(userResult)
+          let response = await slotController.getChance(userResult)
+          console.log('chance result', response)
+          userResult = response.ur
           userSocket.emit('chance', response)
         }
       }
@@ -356,7 +358,10 @@ socketIO.on("connection", (userSocket) => {
         }
       }
 
+      if(userData.diceFace != null) {
       userResult.credits = userResult.credits + (userData.diceFace * bonusFactor)
+      }
+
       await userResult.save();
       await slotResult.save();
       await session.commitTransaction();
