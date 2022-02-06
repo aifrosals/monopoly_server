@@ -420,33 +420,33 @@ exports.getChance = async function (userResult) {
   try {
     var chance = getRandomInt(1, 6);
     var response = "";
-    response = gotoChallenge();
-    //  switch(chance) {
-    //    case 1: {
-    //      response = await loseTenPercent(userResult)
-    //      break;
-    //    }
-    //    case 2: {
-    //      response = await stealCreditsRandomly(userResult)
-    //     break;
-    //   }
-    //   case 3: {
-    //      response = await getShield(userResult)
-    //     break;
-    //   }
-    //   case 4: {
-    //     response = await get2xBonus(userResult)
-    //     break;
-    //   }
-    //   case 5: {
-    //     response = await forceSell(userResult)
-    //     break;
-    //   }
-    //   case 6: {
-    //     response = gotoChallenge()
-    //     break;
-    //   }
-    //}
+  
+     switch(chance) {
+       case 1: {
+         response = await loseTenPercent(userResult)
+         break;
+       }
+       case 2: {
+         response = await stealCreditsRandomly(userResult)
+        break;
+      }
+      case 3: {
+         response = await getShield(userResult)
+        break;
+      }
+      case 4: {
+        response = await get2xBonus(userResult)
+        break;
+      }
+      case 5: {
+        response = await forceSell(userResult)
+        break;
+      }
+      case 6: {
+        response = gotoChallenge()
+        break;
+      }
+    }
     var user = await User.findOne({
       _id: userResult._id
     });
