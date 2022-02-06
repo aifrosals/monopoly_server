@@ -11,15 +11,15 @@ var mongoose = require("mongoose");
 app.use(express.json());
 
 /**
-  * conn is the connection for the mongodb with mongoose 
-  */
+ * conn is the connection for the mongodb with mongoose 
+ */
 const conn = require("./database/conn");
 
 //TODO: work on schedule module
 /** 
  * Scheduling Controller
  */
-//const schedule = require('./controllers/scheduleController')
+const schedule = require('./controllers/scheduleController')
 
 /**
  * mongoose models to work with
@@ -159,6 +159,8 @@ socketIO.on("connection", (userSocket) => {
     var data = userData.user
     const session = await mongoose.startSession();
     session.startTransaction();
+    //* to make the 2x work for next 2 dice roll
+    var chance2x = false
 
     try {
       var userResult = await User.findOne({
@@ -173,20 +175,20 @@ socketIO.on("connection", (userSocket) => {
 
       //* check if the initial type is land to make the rent or buying function
       if (slotResult.initial_type == "land") {
-         /**
-          * Checks if the land/property is owned by the current user or someone else
-          * if owned by someone else then 
-          * Pay rent (deducts current user credits buy 10% of slot price and increments the
-          * owner credits).
-          * Add step count to this slot, when step count reaches 3 or multiple of 3,
-          * the user receives the option to buy land from the owner of the slot. 
-          */
+        /**
+         * Checks if the land/property is owned by the current user or someone else
+         * if owned by someone else then 
+         * Pay rent (deducts current user credits buy 10% of slot price and increments the
+         * owner credits).
+         * Add step count to this slot, when step count reaches 3 or multiple of 3,
+         * the user receives the option to buy land from the owner of the slot. 
+         */
         if (slotResult.owner != null && slotResult.owner._id.toString() != userResult._id.toString()) {
           console.log("land is already bought by someone else", userResult._id.toString())
           console.log('id of the owner', slotResult.owner._id.toString())
           console.log('owner of the land', slotResult.owner)
           var rent = Math.ceil(slotResult.updated_price * 10 / 100)
-          if(userResult.credits < rent && !(userResult.credits <= 0)) {
+          if (userResult.credits < rent && !(userResult.credits <= 0)) {
             rent = Math.ceil(userResult.credits * 30 / 100)
           }
           console.log('The rent is: ', rent)
@@ -258,7 +260,7 @@ socketIO.on("connection", (userSocket) => {
           } else {
             // do nothing
           }
-        } 
+        }
 
         /**
          * Checks if the owner is current user then emit for upgrading property or sell urgent
@@ -272,8 +274,8 @@ socketIO.on("connection", (userSocket) => {
           } else {
             console.log('type is city which cannot be upgraded')
           }
-        } 
-        
+        }
+
         /**
          * Owner is null, emit buy land
          */
@@ -292,6 +294,7 @@ socketIO.on("connection", (userSocket) => {
         //* other effects of the slot
         console.log("not a land");
 
+
         /**
          * If the slot is reward add the current user to step count
          * When step count reaches to number 5: increment 50 credits and set current user's step count to 0
@@ -301,14 +304,14 @@ socketIO.on("connection", (userSocket) => {
           if (slotResult.all_step_count == null) {
             slotResult.all_step_count = {}
             slotResult.all_step_count[userResult._id.toString()] = 1
-           // userSocket.emit('reward_star', 'reward_star')
+            // userSocket.emit('reward_star', 'reward_star')
           } else if (userResult._id.toString() in slotResult.all_step_count == false) {
             slotResult.all_step_count[userResult._id.toString()] = 1
-          //  userSocket.emit('reward_star', 'reward_star')
+            //  userSocket.emit('reward_star', 'reward_star')
 
           } else {
             slotResult.all_step_count[userResult._id.toString()] = slotResult.all_step_count[userResult._id.toString()] + 1
-          //  userSocket.emit('reward_star', 'reward_star')
+            //  userSocket.emit('reward_star', 'reward_star')
 
           }
           if (slotResult.all_step_count[userResult._id.toString()] == 5) {
@@ -317,12 +320,11 @@ socketIO.on("connection", (userSocket) => {
             slotResult.all_step_count[userResult._id.toString()] = 0
             await transactionController.saveTransaction(userResult, slotResult, 'reward', reward)
             userSocket.emit('reward', 'Congratulations you gain 50 credits')
-          }
-          else {
+          } else {
             userSocket.emit('reward_star', 'reward_star');
           }
-        } 
-        
+        }
+
         /**
          * If slot is chest then getCommunityChestCredits and add them to current user's credits.
          */
@@ -331,12 +333,13 @@ socketIO.on("connection", (userSocket) => {
           userResult.credits = userResult.credits + cred
           await transactionController.saveTransaction(userResult, slotResult, 'chest', cred)
           userSocket.emit('chest', `Congratulations you gain ${cred} credits from Community Chest`)
-        }
-
-        else if(slotResult.initial_type == "chance") {
+        } else if (slotResult.initial_type == "chance") {
           let response = await slotController.getChance(userResult)
           console.log('chance result', response)
           userResult = response.ur
+          if (response.response.effect == 'bonus') {
+            chance2x = true
+          }
           userSocket.emit('chance', response)
         }
       }
@@ -347,19 +350,19 @@ socketIO.on("connection", (userSocket) => {
 
       //* Mark all_step_count Modified so the object is updated in the database
       slotResult.markModified("all_step_count")
-      
+
       var bonusFactor = 1
 
-      if(userResult.bonus != null && userResult.bonus.active == true && userResult.bonus.moves > 0) {
+      if (userResult.bonus != null && userResult.bonus.active == true && userResult.bonus.moves > 0 && chance2x == false) {
         userResult.bonus.moves = userResult.bonus.moves - 1
         bonusFactor = 2
-        if(userResult.bonus.moves == 0) {
+        if (userResult.bonus.moves == 0) {
           userResult.bonus.active = false
         }
       }
 
-      if(userData.diceFace != null) {
-      userResult.credits = userResult.credits + (userData.diceFace * bonusFactor)
+      if (userData.diceFace != null) {
+        userResult.credits = userResult.credits + (userData.diceFace * bonusFactor)
       }
 
       await userResult.save();
@@ -416,7 +419,7 @@ app.post('/login', userController.login)
 app.get('/getSlots', slotController.getSlots)
 app.post('/buyLand', slotController.buyLand)
 app.post('/buyProperty', slotController.buyProperty)
-app.post('/buyPropertyHalf',slotController.buyPropertyHalf)
+app.post('/buyPropertyHalf', slotController.buyPropertyHalf)
 app.post('/upgradeSlot', slotController.upgradeSlot)
 app.post('/urgentSell', slotController.urgentSell)
 
@@ -430,4 +433,3 @@ app.post('/getTransactions', transactionController.getTransactions)
 
 
 //TODO: put this into another helper file
-

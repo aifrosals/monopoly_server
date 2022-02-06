@@ -4,9 +4,9 @@ const User = require('../models/user')
 
 const conn = require('../database/conn')
 
-const job = schedule.scheduleJob('* * * * *', function() {
-    console.log('job working one minute')
-})
+// const job = schedule.scheduleJob('* * * * *', function() {
+//     console.log('job working one minute')
+// })
 
 const disableShieldJob = schedule.scheduleJob('1 * * * *', disableShield)
 
