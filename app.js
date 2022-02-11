@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const http = require("http");
+const cors = require('cors')
 var server = http.createServer(app);
 const socketIO = require("socket.io")(server);
 var mongoose = require("mongoose");
@@ -9,6 +10,8 @@ var mongoose = require("mongoose");
  * for parsing the request body
  */
 app.use(express.json());
+
+app.use(cors())
 
 /**
  * conn is the connection for the mongodb with mongoose 
@@ -32,6 +35,12 @@ const Slot = require("./models/slot").Slot;
 //  userSocket.emit('checkUsers', users)  //* emits to the one connected socket
 //  socketIO.sockets.emit('checkUsers', users) //* emit to the all connected sockets
 
+
+/**
+ * Admin controller
+ */
+const adminController = require('./admin/adminController')
+
 /** 
  * controller controlling the actions related to their models
  */
@@ -53,6 +62,9 @@ async function startServer() {
 }
 
 startServer();
+
+//* creating an admin
+//adminController.createAdmin()
 
 /**
  * watch function is used for the mongoose schema (model) to create streams for change detection
@@ -404,6 +416,11 @@ socketIO.on("connection", (userSocket) => {
 app.get("/", (req, res) => {
   res.send("Node server is running ");
 });
+
+/**
+ * Admin Api routes
+ */
+app.post('/adminLogin', adminController.adminLogin)
 
 
 /**
