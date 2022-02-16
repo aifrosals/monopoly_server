@@ -35,6 +35,10 @@ const Slot = require("./models/slot").Slot;
 //  userSocket.emit('checkUsers', users)  //* emits to the one connected socket
 //  socketIO.sockets.emit('checkUsers', users) //* emit to the all connected sockets
 
+/**
+ * Auth middleware
+ */
+const auth = require('./middleware/auth')
 
 /**
  * Admin controller
@@ -47,6 +51,7 @@ const adminController = require('./admin/adminController')
 const userController = require('./controllers/userController')
 const slotController = require('./controllers/slotController')
 const transactionController = require('./controllers/transactionController')
+const challengeController = require('./controllers/challengeController')
 
 
 /**
@@ -345,6 +350,10 @@ socketIO.on("connection", (userSocket) => {
           userResult.credits = userResult.credits + cred
           await transactionController.saveTransaction(userResult, slotResult, 'chest', cred)
           userSocket.emit('chest', `Congratulations you gain ${cred} credits from Community Chest`)
+
+          /**
+           * If it is chance then get chance results
+           */
         } else if (slotResult.initial_type == "chance") {
           let response = await slotController.getChance(userResult)
           console.log('chance result', response)
@@ -353,6 +362,9 @@ socketIO.on("connection", (userSocket) => {
             chance2x = true
           }
           userSocket.emit('chance', response)
+        }
+        else if (slotResult.initial_type == "challenge") {
+          userSocket.emit('challenge', 'challenge')
         }
       }
 
@@ -421,12 +433,15 @@ app.get("/", (req, res) => {
  * Admin Api routes
  */
 app.post('/adminLogin', adminController.adminLogin)
+app.post('/addQuestion', auth, challengeController.addQuestion)
+app.get('/getQuestions', auth, challengeController.getQuestions)
+app.put('/updateQuestion', auth, challengeController.updateQuestion)
+app.delete('/deleteQuestion', auth, challengeController.deleteQuestion)
 
 
 /**
  * User Api routes
  */
-
 app.post('/login', userController.login)
 
 
@@ -441,6 +456,11 @@ app.post('/upgradeSlot', slotController.upgradeSlot)
 app.post('/urgentSell', slotController.urgentSell)
 
 
+/**
+ * User challenge routes
+ */
+app.post('/getChallengeQuestion', challengeController.getChallengeQuestion)
+app.post('/submitAnswer', challengeController.submitAnswer)
 
 
 // Transaction Api routes

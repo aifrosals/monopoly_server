@@ -23,6 +23,10 @@ var UserSchema = new Schema({
     type: Number,
     default: 0
   },
+  challenge_progress: {
+    type: Number,
+    default: 0
+},
   dice: {
     type: Number,
     default: 0
