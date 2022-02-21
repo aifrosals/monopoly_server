@@ -311,7 +311,6 @@ socketIO.on("connection", (userSocket) => {
         //* other effects of the slot
         console.log("not a land");
 
-
         /**
          * If the slot is reward add the current user to step count
          * When step count reaches to number 5: increment 50 credits and set current user's step count to 0
@@ -354,7 +353,8 @@ socketIO.on("connection", (userSocket) => {
           /**
            * If it is chance then get chance results
            */
-        } else if (slotResult.initial_type == "chance") {
+        } 
+        else if (slotResult.initial_type == "chance") {
           let response = await slotController.getChance(userResult)
           console.log('chance result', response)
           userResult = response.ur
@@ -365,7 +365,14 @@ socketIO.on("connection", (userSocket) => {
         }
         else if (slotResult.initial_type == "challenge") {
           userSocket.emit('challenge', 'challenge')
+        
         }
+        else if(slotResult.initial_type == "end") {
+          userResult = userController.getBundleReward(userResult)
+          userSocket.emit('end', 'end')
+        }
+    
+
       }
 
       console.log('user loops', data.loops)
@@ -403,6 +410,15 @@ socketIO.on("connection", (userSocket) => {
       session.endSession();
     }
   });
+
+  /**
+   * Test to move the user back one slot
+   */
+  userSocket.on('moveBack', async (userData) => {
+    console.log('user data current', userData)
+    const result = await userController.moveBack(userData)
+    userSocket.emit('update_current_user', result)
+  })
 
   /**
    * On socket disconnect find the user having this socket and

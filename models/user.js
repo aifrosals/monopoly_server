@@ -3,6 +3,7 @@ var Schema = mongoose.Schema
 
 const ShieldSchema = require('./shield')
 const BonusSchema = require('./bonus')
+const ItemSchema = require('./item')
 
 var UserSchema = new Schema({
   id: {
@@ -31,11 +32,16 @@ var UserSchema = new Schema({
     type: Number,
     default: 0
   },
+  item: {
+    type: Object,
+    default: {}
+  },
   loops: {
     type: Number,
   },
   bonus: BonusSchema,
   shield: ShieldSchema,
+  items: ItemSchema,
 
 
 },  {timestamps: true});
