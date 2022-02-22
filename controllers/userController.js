@@ -16,6 +16,47 @@ exports.login = async function(req, res) {
   }
 }
 
+
+exports.kickUser = async function(req, res) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const id = req.body.id
+    var user = await User.findById(id).session(session);
+    if(!user) {
+      return res.status(400).send("user not found")
+    }
+    if(user.items.kick == 0) {
+      return res.status(401).send("you don't have kick")
+    }
+    const result = await User.aggregate([{$match:{$and:[{"shield.active":false},{presence:"offline"}]}},{$sample:{size:1}}]).session(session)
+    if(!result[0]) {
+      return res.status(402).send("no user to kick")
+    }
+  
+    var kickUser = await User.findByIdAndUpdate(result[0]._id).session(session)
+    if(!kickUser || kickUser.presence == "online") { 
+      return res.status(403).send("no user to kick")
+    }
+    if(kickUser.current_slot >= 49) {
+      kickUser.current_slot = kickUser.current_slot - 49
+    } else {
+      kickUser.current_slot = 0
+    }
+    if(user.items.kick > 0) {
+      user.items.kick -= 1
+    }
+    await user.save()
+    await kickUser.save()
+    await session.commitTransaction();
+    return res.status(200).send("user kicked")
+  } catch(error) {
+    console.error("kick user error", error);
+    await session.abortTransaction();
+    return res.status(405).send("something went wrong");
+  }
+}
+
 exports.getDailyDice = async function() {
   try {
   var result = await User.updateMany({},  { $inc: {

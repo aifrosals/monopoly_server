@@ -420,6 +420,8 @@ socketIO.on("connection", (userSocket) => {
     userSocket.emit('update_current_user', result)
   })
 
+ 
+
   /**
    * On socket disconnect find the user having this socket and
    * set presence to offline
@@ -459,6 +461,7 @@ app.delete('/deleteQuestion', auth, challengeController.deleteQuestion)
  * User Api routes
  */
 app.post('/login', userController.login)
+app.post('/kickUser', userController.kickUser)
 
 
 /**
