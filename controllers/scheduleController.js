@@ -34,4 +34,6 @@ async function disableShield() {
       }
 }
 
+// TODO: reset rm rewards for the reward slot
+
 //const exampleJob = schedule.scheduleJob('* * * * *', userController.getDailyDice)

@@ -315,6 +315,7 @@ socketIO.on("connection", (userSocket) => {
          * If the slot is reward add the current user to step count
          * When step count reaches to number 5: increment 50 credits and set current user's step count to 0
          */
+        // TODO: add cash reward 
         if (slotResult.initial_type == "reward") {
           console.log('reward')
           if (slotResult.all_step_count == null) {
@@ -462,6 +463,7 @@ app.delete('/deleteQuestion', auth, challengeController.deleteQuestion)
  */
 app.post('/login', userController.login)
 app.post('/kickUser', userController.kickUser)
+app.post('/useStep', userController.useStep)
 
 
 /**

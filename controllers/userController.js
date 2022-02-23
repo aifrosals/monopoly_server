@@ -48,14 +48,34 @@ exports.kickUser = async function(req, res) {
     }
     await user.save()
     await kickUser.save()
-    await session.commitTransaction();
-    return res.status(200).send("user kicked")
+    await session.commitTransaction()
+    return res.status(200).send(user)
   } catch(error) {
-    console.error("kick user error", error);
+    console.error("kick user error", error)
     await session.abortTransaction();
-    return res.status(405).send("something went wrong");
+    return res.status(405).send("something went wrong")
   }
 }
+
+exports.useStep = async function(req, res) {
+  try {
+    const id = req.body.id  
+    var user = await User.findById(id)
+    if(!user) {
+      return res.status(400).send("user not found")
+    }
+    if(user.items.step == 0) {
+      return res.status(401).send("you don't have step")
+    }
+    user.items.step -= 1
+    await user.save()
+    return res.status(200).send(user)
+  } catch(error) {
+    console.error("use step error", error)
+    return res.status(405).send("something went wrong")
+  }
+}
+
 
 exports.getDailyDice = async function() {
   try {

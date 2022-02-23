@@ -32,10 +32,6 @@ var UserSchema = new Schema({
     type: Number,
     default: 0
   },
-  item: {
-    type: Object,
-    default: {}
-  },
   loops: {
     type: Number,
   },
