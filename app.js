@@ -366,7 +366,10 @@ socketIO.on("connection", (userSocket) => {
         }
         else if (slotResult.initial_type == "challenge") {
           userSocket.emit('challenge', 'challenge')
-        
+        }
+        else if(slotResult.initial_type == "treasure_hunt"){
+          console.log('treasure hunt')
+          userSocket.emit('treasure_hunt', 'treasure_hunt')
         }
         else if(slotResult.initial_type == "end") {
           userResult = userController.getBundleReward(userResult)
@@ -464,6 +467,8 @@ app.delete('/deleteQuestion', auth, challengeController.deleteQuestion)
 app.post('/login', userController.login)
 app.post('/kickUser', userController.kickUser)
 app.post('/useStep', userController.useStep)
+app.post('/loseTreasureHunt', userController.loseTreasureHunt)
+app.post('/getTreasureHuntReward', userController.getTreasureHuntReward)
 
 
 /**

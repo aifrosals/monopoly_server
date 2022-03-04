@@ -131,4 +131,105 @@ exports.moveBack = async function(user) {
     console.error('UserController moveBack error', error)
   }
 }
+
+exports.getTreasureHuntReward = async function(req, res) {
+  try {
+    const id = req.body.id
+    const rewardFactor = req.body.rewardFactor
+    var user = await User.findById(id)
+    if(!user) {
+      return res.status(400).send("user not found")
+    }
+    const rewards = getTreasureHuntRewardWithFactor(user, rewardFactor) 
+    if(!rewards) {
+      return res.status(401).send("no rewards")
+    }
+    const userResult = await User.findByIdAndUpdate(id, {items: rewards.items, $inc: {credits: rewards.credits}}, {new: true})
+    
+    return res.status(200).send({user: userResult, message: `Congratulations you got ${rewards.credits} credits and ${rewards.itemSize} items`})
+
+  } catch(error) {
+    console.error('UserController getTreasureHuntReward error', error)
+    return res.status(405).send('something went wrong')
+  }
+}
+
+exports.loseTreasureHunt = async function(req, res) {
+  try {
+    const id = req.body.id
+    const userResult = await User.findByIdAndUpdate(id, {credits: 0}, {new: true})
+    return res.status(200).send(userResult)
+  } catch(error) {
+    console.error('UserController loseTreasureHunt error', error)
+    return res.status(405).send('something went wrong')
+  }
+}
+
+function getRandomItemsWithSize(items, size) {
+  var items
+  for(var i = 0; i < size; i++) {
+    items = getRandomItem(items)
+  }
+  return items
+}
+
+function getTreasureHuntRewardWithFactor(user, rewardFactor) {
+  try {
+   switch(rewardFactor) { 
+      case 1:
+        return {
+          credits: 30,
+          items: getRandomItem(user.items),
+          itemSize: 1
+        }
+      case 2:
+        { 
+        return {
+          credits: 130,
+          items: getRandomItemsWithSize(user.items, 3),
+          itemSize: 3
+        }
+      }
+      case 3:
+        { 
+        return {
+          credits: 630,
+          items: getRandomItemsWithSize(user.items, 6),
+          itemSize: 6
+        }
+      }
+      case 4:
+        { 
+        return {
+          credits: 2130,
+          items: getRandomItemsWithSize(user.items, 10),
+          itemSize: 10
+        }
+      }
+      case 5:
+        { 
+        return {
+          credits: 7130,
+          items: getRandomItemsWithSize(user.items, 15),
+          itemSize: 15
+        }
+      }
+      case 6:
+        { 
+        return {
+          credits: 27130,
+          items: getRandomItemsWithSize(user.items, 21),
+          itemSize: 21
+        }
+      }
+    default:
+      return null
+    }
+
+  } catch(error) {
+    console.error('UserController getTreasureHuntRewardWithFactor error', error)
+    throw error
+  }
+}
+
   
