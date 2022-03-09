@@ -1,6 +1,5 @@
 var mongoose = require('mongoose')
 var Schema = mongoose.Schema
-
 const ShieldSchema = require('./shield')
 const BonusSchema = require('./bonus')
 const ItemSchema = require('./item')
@@ -24,6 +23,14 @@ var UserSchema = new Schema({
     type: Number,
     default: 0
   },
+  cash: {
+    type: Number,
+    default: 0
+  },
+  premium: {
+    type: Boolean,
+    default: false
+  },
   challenge_progress: {
     type: Number,
     default: 0
@@ -31,6 +38,10 @@ var UserSchema = new Schema({
   dice: {
     type: Number,
     default: 0
+  },
+  dice_updated_at: {
+    type: Date,
+    default: Date.now
   },
   loops: {
     type: Number,

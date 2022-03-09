@@ -60,7 +60,7 @@ const challengeController = require('./controllers/challengeController')
  * conn.main()
  */
 async function startServer() {
-  await conn.main();
+  await conn.main()
   server.listen(process.env.PORT || 3000, () => {
     console.log("listening on the function");
   });
@@ -400,6 +400,8 @@ socketIO.on("connection", (userSocket) => {
         userResult.credits = userResult.credits + (userData.diceFace * bonusFactor)
       }
 
+      userResult.dice -= 1
+
       await userResult.save();
       await slotResult.save();
       await session.commitTransaction();
@@ -462,6 +464,7 @@ app.delete('/deleteQuestion', auth, challengeController.deleteQuestion)
 
 
 /**
+ * 
  * User Api routes
  */
 app.post('/login', userController.login)

@@ -1,12 +1,15 @@
-const User = require('../models/user')
 const mongoose = require('mongoose')
+const User = require('../models/user')
+const LoginHistory = require('../models/login_history')
+const { useFakeServer } = require('sinon/lib/sinon/util/core/default-config')
 
 exports.login = async function(req, res) {
   try {
     var result = await User.findOne({
       id: req.body.id,
-    }).exec();
-
+    })
+    await saveLoginHistory(result)
+    checkWeeklyLogin(result)
     console.log("user login result", result);
     console.log("login gets called", req.body.id);
     return res.status(200).send(result);
@@ -15,7 +18,6 @@ exports.login = async function(req, res) {
     return res.status(400).send("something went wrong");
   }
 }
-
 
 exports.kickUser = async function(req, res) {
   const session = await mongoose.startSession();
@@ -77,16 +79,6 @@ exports.useStep = async function(req, res) {
 }
 
 
-exports.getDailyDice = async function() {
-  try {
-  var result = await User.updateMany({},  { $inc: {
-    'dice': 5 }
-  })
-  console.log('dices have been updated', result)
-} catch(error) {
-  console.error('UserController getDailyDice error', error)
-}
-}
 
 //TODO: add cash rm 
 
@@ -232,4 +224,96 @@ function getTreasureHuntRewardWithFactor(user, rewardFactor) {
   }
 }
 
+async function saveLoginHistory(user) {
+  try {
+    let date = new Date()
+    date.setHours(0,0,0,0)
+    const loginHistoryResult = await LoginHistory.findOneAndUpdate({login_date_string: new Date().toLocaleDateString(), user_id: user._id},{
+      user_id: user._id,
+      login_date: date,
+      login_date_string: new Date().toLocaleDateString()
+    }, {upsert: true})
+
+      
+  } catch(error) {
+    console.error('UserController saveUserLogin error', error)
+    throw error
+  }
+}
+
+async function checkWeeklyLogin(user) {
+  try {
+    const loginHistoryResult = await LoginHistory.find({user_id: user._id}).sort({'createdAt': -1}).select('login_date').limit(7).lean()
+    if(loginHistoryResult) {
+      console.log('login history', loginHistoryResult)
+    }
+  } catch(error) {
+    console.error('UserController checkWeeklyLogin error', error)
+    throw error
+  }
+}
+
+
+exports.disableShield = async function () {
+  try {
+      console.log('hourly disableShield activated')
+      var userResult = await User.find({"shield.active": true})
+      console.log('user results', userResult)
+      for(var user of userResult) {
+      const oneDay = 24 * 60 * 60 * 1000 // hours*minutes*seconds*milliseconds
+      const firstDate = user.shield.date
+      console.log('shield activation date', firstDate)
+      const secondDate = new Date()
+      const diffDays = Math.round(Math.abs((firstDate - secondDate) / oneDay))
+      console.log(diffDays)
+      if(diffDays >= 3) {
+         user.shield.active = false
+         user.shield.date = undefined
+         user.save()
+      }
+      }
+    } catch(error) {
+      console.log('shield schedule error', error)
+    }
+}
+
+exports.getHourlyDicePremium = async function () {
+  try {
+      console.log('hourly getHourlyDicePremium activated')
+      var userResult = await User.find({premium: true})
+      console.log('user results', userResult)
+      for(var user of userResult) {
+        try {
+          if(user.dice < 20)
+          user.dice += 1
+          user.dice_updated_at = new Date()
+          user.save()
+        } catch(error) {
+          console.log('getHourlyDicePremium singular error', error)
+        }
+      }
+    } catch(error) {
+      console.log('dice schedule error', error)
+    }
+}
+
+exports.getHourlyDiceRegular = async function () {
+  try {
+      console.log('hourly getHourlyDiceRegular activated')
+      var userResult = await User.find({premium: false})
+      console.log('user results', userResult)
+      for(var user of userResult) {
+        try {
+          if(user.dice < 15)
+          user.dice += 1
+          user.dice_updated_at = new Date()
+          user.save()
+        } catch(error) {
+          console.error('getHourlyDiceRegular singular error', error)
+        }
+      }
+    } catch(error) {
+      console.error('getHourlyDiceRegular error', error)
+    }
+}
   
