@@ -12,6 +12,9 @@ var SlotSchema = new Schema({
     level: {
         type: Number
     },
+    image: {
+        type: String
+    },
     name: {
         type: String,
         required: [true, 'Need Slot name']

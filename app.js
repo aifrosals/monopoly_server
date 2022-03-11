@@ -265,6 +265,7 @@ socketIO.on("connection", (userSocket) => {
               slot: slotResult,
               owner: userResult2,
             }
+            slotResult.all_step_count[userResult._id.toString()] = 0
             userSocket.emit('buy_owned_slot_half', sellUrgentData)
           } else if (stepCount % 3 == 0) {
             console.log('buy fresh')
@@ -272,7 +273,7 @@ socketIO.on("connection", (userSocket) => {
               slot: slotResult,
               owner: userResult2,
             }
-            slotResult.all_step_count = {}
+            slotResult.all_step_count[userResult._id.toString()] = 0
             userSocket.emit('buy_owned_slot', sellData)
           } else {
             // do nothing
