@@ -473,6 +473,7 @@ app.post('/kickUser', userController.kickUser)
 app.post('/useStep', userController.useStep)
 app.post('/loseTreasureHunt', userController.loseTreasureHunt)
 app.post('/getTreasureHuntReward', userController.getTreasureHuntReward)
+app.get('/getAllUsers', userController.getAllUsers)
 
 
 /**

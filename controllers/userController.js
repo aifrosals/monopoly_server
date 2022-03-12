@@ -1,8 +1,16 @@
 const mongoose = require('mongoose')
 const User = require('../models/user')
 const LoginHistory = require('../models/login_history')
-const { useFakeServer } = require('sinon/lib/sinon/util/core/default-config')
 
+exports.getAllUsers = async function(req, res) {
+    try {
+        const users = await User.find({})
+        return res.status(200).send(users)
+    } catch (err) {
+        res.status(405).return('Server error')
+    }
+  }
+  
 exports.login = async function(req, res) {
   try {
     var result = await User.findOne({
