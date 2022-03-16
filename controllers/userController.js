@@ -28,25 +28,27 @@ exports.registerGuest = async function (req, res) {
 
 exports.registerUserWithEmail = async function (req, res) {
   try {
+    console.log("registerUserWithEmail", req.body)
     const { email, id, password, confirmPassword } = req.body
-    if (!email || !id || !password || !confirmPassword) {
+    console.log('username', id)
+    if (email && id && password && confirmPassword) {
       if (password !== confirmPassword) {
         return res.status(400).send('Password and confirm password does not match')
       }
-      if (!(await checkUserName(user.id))) {
-        return res.status(401).send("username already exists")
+      if (!(await checkUserNameAndEmail(id, email))) {
+        return res.status(401).send("username or email already exists")
       }
 
       let encryptedPassword = await bcrypt.hash(password, 10)
 
-      let user = await User.create({ id: id, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword })
-      let token = jwt.sign({ user_id: admin._id, email }, process.env.TOKEN_KEY, { expiresIn: '365d' })
+      let user = await User.create({ id: id, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, email: email })
+      let token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: '365d' })
       user.token = token
       await user.save()
-      return res.status(200).send(guest)
+      return res.status(200).send(user)
 
     }
-    return res.status(400).send('error generating name')
+    return res.status(400).send('Error in details')
 
 
   } catch (error) {
@@ -54,11 +56,13 @@ exports.registerUserWithEmail = async function (req, res) {
     return res.status(405).send('Server Error')
   }
 }
-async function checkUserName(userName) {
+async function checkUserNameAndEmail(userName, email) {
   try {
 
-    const result = await User.findOne({ id: userName }).count()
+    const result = await User.findOne({$or:[ {id: userName}, {email: email} ]}).count()
+    console.log('checkUserName', result)
     if (result == 0) {
+      
       return true
     }
     else {

@@ -355,7 +355,7 @@ socketIO.on("connection", (userSocket) => {
           /**
            * If it is chance then get chance results
            */
-        } 
+        }
         else if (slotResult.initial_type == "chance") {
           let response = await slotController.getChance(userResult)
           console.log('chance result', response)
@@ -368,15 +368,15 @@ socketIO.on("connection", (userSocket) => {
         else if (slotResult.initial_type == "challenge") {
           userSocket.emit('challenge', 'challenge')
         }
-        else if(slotResult.initial_type == "treasure_hunt"){
+        else if (slotResult.initial_type == "treasure_hunt") {
           console.log('treasure hunt')
           userSocket.emit('treasure_hunt', 'treasure_hunt')
         }
-        else if(slotResult.initial_type == "end") {
+        else if (slotResult.initial_type == "end") {
           userResult = userController.getBundleReward(userResult)
           userSocket.emit('end', 'end')
         }
-    
+
 
       }
 
@@ -427,7 +427,7 @@ socketIO.on("connection", (userSocket) => {
     userSocket.emit('update_current_user', result)
   })
 
- 
+
 
   /**
    * On socket disconnect find the user having this socket and
@@ -468,7 +468,8 @@ app.delete('/deleteQuestion', auth, challengeController.deleteQuestion)
  * 
  * User Api routes
  */
-app.post('/login', userController.login)
+app.post('/registerUserWithEmail', userController.registerUserWithEmail)
+app.post('/loginWithEmail', userController.loginWithEmail)
 app.post('/kickUser', userController.kickUser)
 app.post('/useStep', userController.useStep)
 app.post('/loseTreasureHunt', userController.loseTreasureHunt)
@@ -482,7 +483,7 @@ app.post('/addDice', userController.addDices)
 /**
  * Slot API routes
  */
-app.get('/getSlots', slotController.getSlots)
+app.get('/getSlots', auth, slotController.getSlots)
 app.post('/buyLand', slotController.buyLand)
 app.post('/buyProperty', slotController.buyProperty)
 app.post('/buyPropertyHalf', slotController.buyPropertyHalf)
