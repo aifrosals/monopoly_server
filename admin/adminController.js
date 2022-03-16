@@ -12,7 +12,7 @@ let admin = Admin.create({
     email: email.toLowerCase(),
     password: encryptedPassword
 })
-var token = await jwt.sign({user_id: admin._id, email}, process.env.TOKEN_KEY, {expiresIn: '2d'})
+var token =  jwt.sign({user_id: admin._id, email}, process.env.TOKEN_KEY, {expiresIn: '2d'})
 admin.token = token
 await admin.save()
     } catch(error) {

@@ -9,6 +9,15 @@ var UserSchema = new Schema({
     type: String,
     required: [true, 'Need User name']
   },
+  email: {
+    type: String,
+  },
+  password: {
+    type: String,
+  },
+  token: {
+    type: String,
+  },
   current_slot: {
       type: Number,
       required: [true]
@@ -43,8 +52,17 @@ var UserSchema = new Schema({
     type: Date,
     default: Date.now
   },
+  items_updated_at: {
+    type: Date,
+    default: Date.now
+  },
   loops: {
     type: Number,
+    default: 0
+  },
+  guest: {
+    type: Boolean,
+    default: true
   },
   bonus: BonusSchema,
   shield: ShieldSchema,
