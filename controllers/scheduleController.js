@@ -7,9 +7,9 @@ const userController = require('./userController')
 // })
 
 const disableShieldJob = schedule.scheduleJob('1 * * * *', userController.disableShield)
-
 const getHourlyDicePremiumJob = schedule.scheduleJob('0 */2 * * *', userController.getHourlyDicePremium)
 const getHourlyDiceRegular = schedule.scheduleJob('0 */3 * * *', userController.getHourlyDicePremium)
+const getItemsMonthly = schedule.scheduleJob('0 0 1 * *', userController.getItemsMonthly)
 
 
 

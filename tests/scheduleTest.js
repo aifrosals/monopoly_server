@@ -31,5 +31,31 @@ async function testSchedule() {
 
  
 }
- testSchedule()
+
+
+async function testScheduleMonthly() {
+   // await conn.main()
+    var date = new Date(2022, 1, 1, 0, 0, 0, 0)
+    date.setHours(0,0,0,0)
+   
+    var clock = sinon.useFakeTimers(date)
+    console.log('testSchedule')
+    console.log('clock.now', clock.now)
+
+    console.log('Date', new Date())
+ const job = new schedule.scheduleJob('0 0 1 * *', function() {
+    console.log('job working monthly')
+ })
+
+    let time = 60 * 60 * 1000 * 24 * 30
+    clock.tick(time)
+    console.log('clock.now', clock.now)
+    console.log('Date', new Date())
+    clock.tick(time)
+    console.log('clock.now', clock.now)
+    console.log('Date', new Date())
+
+ 
+}
+ testScheduleMonthly()
 

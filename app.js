@@ -474,6 +474,9 @@ app.post('/useStep', userController.useStep)
 app.post('/loseTreasureHunt', userController.loseTreasureHunt)
 app.post('/getTreasureHuntReward', userController.getTreasureHuntReward)
 app.get('/getAllUsers', userController.getAllUsers)
+app.post('/activatePremium', userController.activatePremium)
+app.post('/deactivatePremium', userController.deactivatePremium)
+app.post('/addDice', userController.addDices)
 
 
 /**
