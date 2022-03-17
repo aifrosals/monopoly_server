@@ -6,6 +6,41 @@ require('dotenv').config()
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
+exports.login = async function (req, res) {
+  try {
+
+    var result = await User.findOne({
+        id: req.body.id
+    }).exec()
+
+    console.log('user login result', result);
+    console.log('login gets called', req.body.id)
+    res.status(200).send(result)
+} catch (error) {
+    console.error('login error', error)
+    return res.status(405).send('Server error')
+}
+}
+
+exports.loginWithToken = async function (req, res) {
+    try {
+        const token = req.body.token
+        if (!token) {
+            return res.status(401).send('Authentication error sign in again')
+        }
+        const user = await User.findOne({ token: token })
+        if (!user) {
+            return res.status(402).send('Authentication error sign in again')
+        }
+        await saveLoginHistory(user)
+        checkWeeklyLogin(user)
+        return res.status(200).send(user)
+    } catch (error) {
+        console.error('loginWithToken error', error) 
+        return res.status(405).send('Error while login')
+    }
+}
+
 exports.registerGuest = async function (req, res) {
   try {
     let userName = await getRandomUserName()
@@ -16,6 +51,8 @@ exports.registerGuest = async function (req, res) {
       let token = jwt.sign({ user_id: guest._id }, process.env.TOKEN_KEY, { expiresIn: '365d' })
       guest.token = token
       await guest.save()
+      await saveLoginHistory(guest)
+      checkWeeklyLogin(guest)
       return res.status(200).send(guest)
     }
     return res.status(400).send('error generating name')
@@ -45,6 +82,8 @@ exports.registerUserWithEmail = async function (req, res) {
       let token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: '365d' })
       user.token = token
       await user.save()
+      await saveLoginHistory(user)
+      checkWeeklyLogin(user)
       return res.status(200).send(user)
 
     }

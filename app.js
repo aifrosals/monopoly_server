@@ -39,6 +39,7 @@ const Slot = require("./models/slot").Slot;
  * Auth middleware
  */
 const auth = require('./middleware/auth')
+const socketAuth = require('./middleware/socketAuth')
 
 /**
  * Admin controller
@@ -128,7 +129,7 @@ async function sendAllUsersData() {
 }
 
 
-
+socketIO.use(socketAuth)
 
 /**
  * Connecting a socket from the client/mobile sid to the server
@@ -469,6 +470,9 @@ app.delete('/deleteQuestion', auth, challengeController.deleteQuestion)
  * User Api routes
  */
 app.post('/registerUserWithEmail', userController.registerUserWithEmail)
+app.post('/login', userController.login)
+app.post('/registerGuest', userController.registerGuest)
+app.post('/loginWithToken', userController.loginWithToken)
 app.post('/loginWithEmail', userController.loginWithEmail)
 app.post('/kickUser', userController.kickUser)
 app.post('/useStep', userController.useStep)
