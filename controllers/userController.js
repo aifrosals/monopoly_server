@@ -47,7 +47,7 @@ exports.registerGuest = async function (req, res) {
     let encryptedPassword = await bcrypt.hash(userName, 10)
 
     if (userName) {
-      let guest = await User.create({ id: userName, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword })
+      let guest = await User.create({ id: userName, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, bonus: {}, shield: {}, premium: false, items: {} })
       let token = jwt.sign({ user_id: guest._id }, process.env.TOKEN_KEY, { expiresIn: '365d' })
       guest.token = token
       await guest.save()
@@ -78,7 +78,7 @@ exports.registerUserWithEmail = async function (req, res) {
 
       let encryptedPassword = await bcrypt.hash(password, 10)
 
-      let user = await User.create({ id: id, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, email: email })
+      let user = await User.create({ id: id, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, email: email, bonus: {}, shield: {}, premium: false, items: {} })
       let token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: '365d' })
       user.token = token
       await user.save()
@@ -271,6 +271,7 @@ exports.useStep = async function (req, res) {
 exports.getBundleReward = function (userResult) {
   try {
     userResult.credits = userResult.credits + 150
+    userResult.cash = userResult.cash + 5
     userResult.items = getRandomItem(userResult.items)
     userResult.dice = userResult.dice + 20
 

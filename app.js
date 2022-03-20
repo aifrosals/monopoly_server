@@ -335,10 +335,10 @@ socketIO.on("connection", (userSocket) => {
           }
           if (slotResult.all_step_count[userResult._id.toString()] == 5) {
             let reward = 50
-            userResult.credits = userResult.credits + reward
+            userResult.credits = userResult.cash + reward
             slotResult.all_step_count[userResult._id.toString()] = 0
             await transactionController.saveTransaction(userResult, slotResult, 'reward', reward)
-            userSocket.emit('reward', 'Congratulations you gain 50 credits')
+            userSocket.emit('reward', 'Congratulations you gain 50 RM cash')
           } else {
             userSocket.emit('reward_star', 'reward_star');
           }

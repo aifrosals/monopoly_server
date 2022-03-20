@@ -5,7 +5,7 @@ async function main() {
     await mongoose.connect(
      "mongodb+srv://monopoly:monopoly1122@cluster0.m2chq.mongodb.net/monopoly_db?retryWrites=true&w=majority",  //* production
     
-    // "mongodb+srv://monopoly:monopoly1122@cluster0.m2chq.mongodb.net/monopoly_db_local?retryWrites=true&w=majority",    //* development
+   //  "mongodb+srv://monopoly:monopoly1122@cluster0.m2chq.mongodb.net/monopoly_db_local?retryWrites=true&w=majority",    //* development
       { useNewUrlParser: true }
     )
     console.log('Mongoose is connected')
