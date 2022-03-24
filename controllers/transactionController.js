@@ -3,6 +3,13 @@ const User = require('../models/user')
 const Slot = require('../models/slot')
 const Transaction = require('../models/transactions')
 
+const paginationLimit = 30
+
+
+
+/**
+ * Save a transaction by its type
+ */
 exports.saveTransaction = async function (user, slot, type, amount, owner) {
   try {
     var transaction = new Transaction()
@@ -36,10 +43,10 @@ exports.saveTransaction = async function (user, slot, type, amount, owner) {
       transaction.seller_name = slot.owner.id
       transaction.type = 'rent'
     }
-    else if(type == 'reward') {
+    else if (type == 'reward') {
       transaction.type = 'reward'
     }
-    else if(type == 'chest') {
+    else if (type == 'chest') {
       transaction.type = 'chest'
     }
 
@@ -51,14 +58,55 @@ exports.saveTransaction = async function (user, slot, type, amount, owner) {
   }
 }
 
-
+/**
+ * Get all transactions by user
+ */
 exports.getTransactions = async function (req, res) {
 
-  //TODO: Limit the transaction return and add pagination 
-
   try {
-    var userId = mongoose.Types.ObjectId(req.body.userId)
-    let transactions = await Transaction.find({ $or: [{ buyer: userId }, { buyer: userId, type: 'rent' }, { seller: userId, type: 'rent' }, {seller: userId, type: 'seller'}, {seller: userId, type:'half'}] }).populate({ path: 'child', populate: { path: 'owner', model: 'users' } }).sort({ createdAt: -1 });
+    const userId = mongoose.Types.ObjectId(req.body.userId)
+
+    const transactions = await Transaction.find({
+      $or: [{ buyer: userId },
+      { buyer: userId, type: 'rent' },
+      { seller: userId, type: 'rent' },
+      { seller: userId, type: 'seller' },
+      { seller: userId, type: 'half' }]
+    }).populate({
+      path: 'child',
+      populate: { path: 'owner', model: 'users' }
+    })
+      .sort({ createdAt: -1 }).limit(paginationLimit);
+    
+    console.log('getTransaction transactions', transactions)
+    return res.status(200).send(transactions)
+  } catch (error) {
+    console.error('TransactionController error', error)
+    return res.status(400).send('error 400')
+  }
+}
+
+exports.getPaginatedTransactions = async function (req, res) {
+  try {
+    console.log(req.body.lastDate)
+    const lastDate = new Date(req.body.lastDate)
+    console.log('getPaginatedTransactions lastDate', lastDate)
+    const userId = mongoose.Types.ObjectId(req.body.userId)
+
+    const transactions = await Transaction.find({
+      $or: [{ buyer: userId },
+      { buyer: userId, type: 'rent' },
+      { seller: userId, type: 'rent' },
+      { seller: userId, type: 'seller' },
+      { seller: userId, type: 'half' }],
+      createdAt: { $lt: lastDate }
+    })
+      .populate({
+        path: 'child', populate:
+        { path: 'owner', model: 'users' }
+      })
+      .sort({ createdAt: -1 }).limit(paginationLimit);
+
     console.log('getTransaction transactions', transactions)
     return res.status(200).send(transactions)
   } catch (error) {

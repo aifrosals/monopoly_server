@@ -53,6 +53,7 @@ const userController = require('./controllers/userController')
 const slotController = require('./controllers/slotController')
 const transactionController = require('./controllers/transactionController')
 const challengeController = require('./controllers/challengeController')
+const feedbackController = require('./controllers/feedbackController')
 
 
 /**
@@ -502,10 +503,20 @@ app.post('/getChallengeQuestion', challengeController.getChallengeQuestion)
 app.post('/submitAnswer', challengeController.submitAnswer)
 
 
-// Transaction Api routes
+/**
+ * Transaction routes
+ */
 app.post('/getTransactions', transactionController.getTransactions)
+app.post('/getPaginatedTransactions', transactionController.getPaginatedTransactions)
+
+/**
+ * Feedback routes
+ */
+app.post('/submitFeedback', feedbackController.submitFeedback)
+app.get('/getFeedback', feedbackController.getFeedbacks)
+app.post('/getPaginatedFeedback', feedbackController.getPaginatedFeedbacks)
+
 
 //TODO: the version of socket is 2.4 which is compatible with flutter version, update accordingly in future
 
 
-//TODO: put this into another helper file
