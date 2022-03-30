@@ -8,3 +8,7 @@ someDate.setDate(someDate.getDate() + 1);
 
     let userName = rug.generate()
     console.log(userName)
+
+    const email = 'A@A.com'
+    console.log(email)
+    console.log(email.toLowerCase())

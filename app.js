@@ -192,6 +192,7 @@ socketIO.on("connection", (userSocket) => {
 
       console.log("slot data", slotResult);
 
+
       //* check if the initial type is land to make the rent or buying function
       if (slotResult.initial_type == "land") {
         /**
@@ -473,6 +474,7 @@ app.delete('/deleteQuestion', auth, challengeController.deleteQuestion)
 app.post('/registerUserWithEmail', userController.registerUserWithEmail)
 app.post('/login', userController.login)
 app.post('/registerGuest', userController.registerGuest)
+app.post('/registerGuestWithEmail', userController.registerGuestWithEmail)
 app.post('/loginWithToken', userController.loginWithToken)
 app.post('/loginWithEmail', userController.loginWithEmail)
 app.post('/kickUser', userController.kickUser)

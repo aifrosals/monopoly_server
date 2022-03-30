@@ -1,5 +1,6 @@
 var mongoose = require('mongoose')
 var Schema = mongoose.Schema
+
 const ShieldSchema = require('./shield')
 const BonusSchema = require('./bonus')
 const ItemSchema = require('./item')

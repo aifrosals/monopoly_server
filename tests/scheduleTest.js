@@ -7,7 +7,7 @@ const conn = require('../database/conn')
 //     console.log('job working one at 12 am')
 // })
 
-
+//new schedule.scheduleJob('0 */2 * * *', userController.getHourlyDiceRegular)       for every 2 hours
 
 async function testSchedule() {
     await conn.main()
@@ -19,12 +19,15 @@ async function testSchedule() {
     console.log('clock.now', clock.now)
 
     console.log('Date', new Date())
- const job = new schedule.scheduleJob('0 */3 * * *', userController.getHourlyDiceRegular)
+ const job = new schedule.scheduleJob('0 */1 * * *', function() {
+    console.log('job working')
+ })
 
-    let time = 60 * 60 * 1000 * 2
-    clock.tick(time)
+     let time = 60 * 60 * 1000 * 1
+     clock.tick(time)
     console.log('clock.now', clock.now)
     console.log('Date', new Date())
+    time = 60 * 30 * 1000
     clock.tick(time)
     console.log('clock.now', clock.now)
     console.log('Date', new Date())
@@ -57,5 +60,5 @@ async function testScheduleMonthly() {
 
  
 }
- testScheduleMonthly()
+ testSchedule()
 

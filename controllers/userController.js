@@ -10,53 +10,50 @@ exports.login = async function (req, res) {
   try {
 
     var result = await User.findOne({
-        id: req.body.id
+      id: req.body.id
     }).exec()
 
     console.log('user login result', result);
     console.log('login gets called', req.body.id)
     res.status(200).send(result)
-} catch (error) {
+  } catch (error) {
     console.error('login error', error)
     return res.status(405).send('Server error')
-}
+  }
 }
 
 exports.loginWithToken = async function (req, res) {
-    try {
-        const token = req.body.token
-        if (!token) {
-            return res.status(401).send('Authentication error sign in again')
-        }
-        const user = await User.findOne({ token: token })
-        if (!user) {
-            return res.status(402).send('Authentication error sign in again')
-        }
-        await saveLoginHistory(user)
-        checkWeeklyLogin(user)
-        return res.status(200).send(user)
-    } catch (error) {
-        console.error('loginWithToken error', error) 
-        return res.status(405).send('Error while login')
+  try {
+    const token = req.body.token
+    if (!token) {
+      return res.status(401).send('Authentication error sign in again')
     }
+    const user = await User.findOne({ token: token })
+    if (!user) {
+      return res.status(402).send('Authentication error sign in again')
+    }
+    await saveLoginHistory(user)
+    checkWeeklyLogin(user)
+    return res.status(200).send(user)
+  } catch (error) {
+    console.error('loginWithToken error', error)
+    return res.status(405).send('Error while login')
+  }
 }
 
 exports.registerGuest = async function (req, res) {
   try {
-    let userName = await getRandomUserName()
+    let userName = 'Guest'
+    let autoId = await User.countDocuments() + 1
+    userName = userName + autoId.toString().padStart(3, '0')
     let encryptedPassword = await bcrypt.hash(userName, 10)
-
-    if (userName) {
-      let guest = await User.create({ id: userName, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, bonus: {}, shield: {}, premium: false, items: {} })
-      let token = jwt.sign({ user_id: guest._id }, process.env.TOKEN_KEY, { expiresIn: '365d' })
-      guest.token = token
-      await guest.save()
-      await saveLoginHistory(guest)
-      checkWeeklyLogin(guest)
-      return res.status(200).send(guest)
-    }
-    return res.status(400).send('error generating name')
-
+    let guest = await User.create({ id: userName, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, bonus: {}, shield: {}, premium: false, items: {} })
+    let token = jwt.sign({ user_id: guest._id }, process.env.TOKEN_KEY, { expiresIn: '365d' })
+    guest.token = token
+    await guest.save()
+    await saveLoginHistory(guest)
+    checkWeeklyLogin(guest)
+    return res.status(200).send(guest)
   } catch (error) {
     console.log(error)
     return res.status(405).send('Server Error')
@@ -78,8 +75,8 @@ exports.registerUserWithEmail = async function (req, res) {
 
       let encryptedPassword = await bcrypt.hash(password, 10)
 
-      let user = await User.create({ id: id, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, email: email, bonus: {}, shield: {}, premium: false, items: {} })
-      let token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: '365d' })
+      let user = await User.create({ id: id, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, email: email.toLowerCase(), bonus: {}, shield: {}, premium: false, items: {} })
+      let token = jwt.sign({ user_id: user._id, email}, process.env.TOKEN_KEY, { expiresIn: '365d' })
       user.token = token
       await user.save()
       await saveLoginHistory(user)
@@ -95,13 +92,44 @@ exports.registerUserWithEmail = async function (req, res) {
     return res.status(405).send('Server Error')
   }
 }
+
+exports.registerGuestWithEmail = async function (req, res) {
+  try {
+    console.log("registerGuestWithEmail", req.body)
+    const { email, id, password, confirmPassword, serverId } = req.body
+    console.log('username', id)
+    if (email && id && password && confirmPassword) {
+      if (password !== confirmPassword) {
+        return res.status(400).send('Password and confirm password does not match')
+      }
+      if (!(await checkUserNameAndEmail(id, email))) {
+        return res.status(401).send("username or email already exists")
+      }
+      let encryptedPassword = await bcrypt.hash(password, 10)
+
+      let user = await User.findByIdAndUpdate(serverId, { id: id, password: encryptedPassword, email: email.toLowerCase(), guest: false},{new: true})
+      let token = jwt.sign({ user_id: user._id, email}, process.env.TOKEN_KEY, { expiresIn: '2d' })
+      user.token = token
+      await user.save()
+      await saveLoginHistory(user)
+      checkWeeklyLogin(user)
+      return res.status(200).send(user)
+    }
+    return res.status(400).send('Error in details')
+  } catch(error) {
+      console.log(error)
+      return res.status(405).send('Server Error')
+    }
+  }
+
+
 async function checkUserNameAndEmail(userName, email) {
   try {
-
-    const result = await User.findOne({$or:[ {id: userName}, {email: email} ]}).count()
+  
+    const result = await User.findOne({ $or: [{ id: userName }, { email: email.toLowerCase() }] }).count()
     console.log('checkUserName', result)
     if (result == 0) {
-      
+
       return true
     }
     else {
@@ -113,6 +141,7 @@ async function checkUserNameAndEmail(userName, email) {
     throw error
   }
 }
+
 
 
 
@@ -435,6 +464,7 @@ async function checkWeeklyLogin(user) {
 }
 
 
+
 exports.disableShield = async function () {
   try {
     console.log('hourly disableShield activated')
@@ -465,7 +495,7 @@ exports.getHourlyDicePremium = async function () {
     console.log('user results', userResult)
     for (var user of userResult) {
       try {
-        if (user.dice < 20)
+        if (user.dice < 16)
           user.dice += 1
         user.dice_updated_at = new Date()
         user.save()
@@ -485,7 +515,7 @@ exports.getHourlyDiceRegular = async function () {
     console.log('user results', userResult)
     for (var user of userResult) {
       try {
-        if (user.dice < 15)
+        if (user.dice < 10)
           user.dice += 1
         user.dice_updated_at = new Date()
         user.save()
