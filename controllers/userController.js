@@ -436,11 +436,11 @@ function getTreasureHuntRewardWithFactor(user, rewardFactor) {
 async function saveLoginHistory(user) {
   try {
     let date = new Date()
-    date.setHours(0, 0, 0, 0)
+    date = date.setHours(0, 0, 0, 0)
     const loginHistoryResult = await LoginHistory.findOneAndUpdate({ login_date_string: new Date().toLocaleDateString(), user_id: user._id }, {
       user_id: user._id,
       login_date: date,
-      login_date_string: new Date().toLocaleDateString()
+      login_date_string: new Date()
     }, { upsert: true })
 
 
@@ -494,9 +494,10 @@ exports.getHourlyDicePremium = async function () {
     console.log('user results', userResult)
     for (var user of userResult) {
       try {
-        if (user.dice < 16)
-          user.dice += 1
         user.dice_updated_at = new Date()
+        if (user.dice < 16) {
+          user.dice += 1
+        }
         user.save()
       } catch (error) {
         console.log('getHourlyDicePremium singular error', error)
@@ -514,9 +515,10 @@ exports.getHourlyDiceRegular = async function () {
     console.log('user results', userResult)
     for (var user of userResult) {
       try {
-        if (user.dice < 10)
-          user.dice += 1
         user.dice_updated_at = new Date()
+        if (user.dice < 10) {
+          user.dice += 1
+        }
         user.save()
       } catch (error) {
         console.error('getHourlyDiceRegular singular error', error)

@@ -76,7 +76,7 @@ startServer();
 /**
  * watch function is used for the mongoose schema (model) to create streams for change detection
  */
-const userStream = User.watch();
+const userStream = User.watch([], {fullDocument:'updateLookup'});
 const slotStream = Slot.watch();
 
 
@@ -89,6 +89,7 @@ const slotStream = Slot.watch();
 userStream.on("change", (change) => {
   console.log("a change has been detected in the user collection", change);
   sendAllUsersData();
+  sendOnlineUserData(change.fullDocument)
 });
 
 /**
@@ -110,7 +111,7 @@ async function updateSlotsFAUsers() {
   try {
     var slotResult = await Slot.find().populate("owner", "id").sort('index');
     console.log("updateSlotsFAUsers", slotResult);
-    socketIO.sockets.emit("checkBoard", slotResult);
+    socketIO.sockets.emit("check_board", slotResult);
   } catch (error) {
     console.error("error updating slot", error);
   }
@@ -123,7 +124,19 @@ async function sendAllUsersData() {
   try {
     var data = await User.find();
     console.log("users collection data", data);
-    socketIO.sockets.emit("checkUsers", data);
+    socketIO.sockets.emit("check_users", data);
+  } catch (error) {
+    console.error("error updating all users", error);
+  }
+}
+
+/**
+ * Update online users
+ */
+ async function sendOnlineUserData(user) {
+  try {
+     console.log('full doc', user)
+     socketIO.sockets.emit(user._id, user)
   } catch (error) {
     console.error("error updating all users", error);
   }
@@ -143,7 +156,8 @@ socketIO.on("connection", (userSocket) => {
 
   /**
    * When emitted from the client/mobile side, sets the users presence to online 
-   * in the users collection. 
+   * in the users collection.
+   * Note id is the username of the user 
    */
   userSocket.on("online", async (userId) => {
     try {
