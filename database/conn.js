@@ -1,11 +1,11 @@
 var mongoose = require("mongoose")
+const dbConfig = require('../config')
 
 async function main() {
   try {
     await mongoose.connect(
-     "mongodb+srv://monopoly:monopoly1122@cluster0.m2chq.mongodb.net/monopoly_db?retryWrites=true&w=majority",  //* production
-    
-   //  "mongodb+srv://monopoly:monopoly1122@cluster0.m2chq.mongodb.net/monopoly_db_local?retryWrites=true&w=majority",    //* development
+       dbConfig.devDB,
+      // dbConfig.productionDB,
       { useNewUrlParser: true }
     )
     console.log('Mongoose is connected')
