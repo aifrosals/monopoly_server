@@ -15,7 +15,7 @@ const QuestionSchema = new Schema({
           type: Boolean,
           default: false
       },
-      user_results: {
+      user_results: {                                // object contains user doc id as key and boolean value of true or false
         type: Object,
         default: {}
     },

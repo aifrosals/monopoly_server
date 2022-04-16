@@ -347,7 +347,6 @@ socketIO.on("connection", (userSocket) => {
           } else {
             slotResult.all_step_count[userResult._id.toString()] = slotResult.all_step_count[userResult._id.toString()] + 1
             //  userSocket.emit('reward_star', 'reward_star')
-
           }
           if (slotResult.all_step_count[userResult._id.toString()] == 5) {
             let reward = 50
@@ -393,7 +392,6 @@ socketIO.on("connection", (userSocket) => {
           userResult = userController.getBundleReward(userResult)
           userSocket.emit('end', 'end')
         }
-
 
       }
 
@@ -479,7 +477,6 @@ app.post('/addQuestion', auth, challengeController.addQuestion)
 app.get('/getQuestions', auth, challengeController.getQuestions)
 app.put('/updateQuestion', auth, challengeController.updateQuestion)
 app.delete('/deleteQuestion', auth, challengeController.deleteQuestion)
-
 
 /**
  * 
