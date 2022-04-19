@@ -75,7 +75,7 @@ exports.registerUserWithEmail = async function (req, res) {
 
       let encryptedPassword = await bcrypt.hash(password, 10)
 
-      let user = await User.create({ id: id, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, email: email.toLowerCase(), bonus: {}, shield: {}, premium: false, items: {} })
+      let user = await User.create({ id: id, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, email: email.toLowerCase(), bonus: {}, shield: {}, premium: false, items: {}, guest: false })
       let token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: '365d' })
       user.token = token
       await user.save()

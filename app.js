@@ -54,6 +54,7 @@ const slotController = require('./controllers/slotController')
 const transactionController = require('./controllers/transactionController')
 const challengeController = require('./controllers/challengeController')
 const feedbackController = require('./controllers/feedbackController')
+const statsController = require('./controllers/statsController')
 
 
 /**
@@ -477,6 +478,18 @@ app.post('/addQuestion', auth, challengeController.addQuestion)
 app.get('/getQuestions', auth, challengeController.getQuestions)
 app.put('/updateQuestion', auth, challengeController.updateQuestion)
 app.delete('/deleteQuestion', auth, challengeController.deleteQuestion)
+
+/**
+ * Stats Api routes
+ */
+app.get('/getUserCountStats', auth, statsController.getUserCountStats)
+app.get('/getDailyActiveUsers', auth, statsController.getDailyActiveUsers)
+app.get('/getRegisteredUsers', auth, statsController.getRegisteredUsers)
+app.get('/getGuests', auth, statsController.getGuests)
+app.get('/getUserCount', auth, statsController.getUserCount)
+app.get('/getMonthlyActivity', auth, statsController.getMonthlyActivity)
+app.get('/get3DayActivity', auth, statsController.get3DayActivity)
+app.get('/getWeeklyActivity', auth, statsController.getWeeklyActivity)
 
 /**
  * 
