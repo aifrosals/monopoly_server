@@ -64,7 +64,7 @@ exports.getMonthlyActivity = async (req, res) => {
             }},
             {$sort: { createdAt: 1 }} ,
             {$group: {
-                _id: "$login_date_string",
+                _id: "$login_date",
                 usersCount: { $sum: 1 }
             }
         }
