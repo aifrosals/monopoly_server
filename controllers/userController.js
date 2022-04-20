@@ -437,7 +437,7 @@ async function saveLoginHistory(user) {
   try {
     let date = new Date()
     date = date.setHours(0, 0, 0, 0)
-    let localDate = date.toLocaleDateString()
+    let localDate = new Date().toLocaleDateString()
     const loginHistoryResult = await LoginHistory.findOneAndUpdate({ login_date_string: localDate, user_id: user._id }, {
       user_id: user._id,
       login_date: date,
