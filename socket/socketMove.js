@@ -312,7 +312,6 @@ userSocket.on("online", async (userId) => {
       }).exec();
       result.presence = "offline";
       await result.save();
-      //userSocket.emit('checkUsers', users)
       // socketIO.sockets.emit('checkUsers', users)
     } catch (error) {
       console.log("disconnect error", error);
