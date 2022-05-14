@@ -4,8 +4,8 @@ const dbConfig = require('../config')
 async function main() {
   try {
     await mongoose.connect(
-      // dbConfig.devDB,
-       dbConfig.productionDB,
+       dbConfig.devDB,
+      // dbConfig.productionDB,
       { useNewUrlParser: true }
     )
     console.log('Mongoose is connected')

@@ -4,11 +4,11 @@ const LoginHistory = require('../models/login_history')
 exports.getUserCountStats = async (req, res) => {
     try {
         const totalUsers = await User.find({}).count()
-        const registeredUsers = await User.find().or([{guest: false, $ne: {email: undefined}}]).count()
+        const registeredUsers = await User.find().or([{ guest: false, $ne: { email: undefined } }]).count()
         const guests = await User.find({ guest: true }).count()
-        const dailyActiveUsers = await LoginHistory.find({ login_date_string: new Date().toLocaleDateString() }).distinct('user_id').count() 
+        const dailyActiveUsers = await LoginHistory.find({ login_date_string: new Date().toLocaleDateString() }).distinct('user_id').count()
         return res.status(200).send({ totalUsers, registeredUsers, guests, dailyActiveUsers })
-    } catch(error) {
+    } catch (error) {
         return res.status(400).send('error getting user count stats')
     }
 }
@@ -56,18 +56,20 @@ exports.getMonthlyActivity = async (req, res) => {
         const lastDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, currentDate.getDate())
         const loginRecords = await LoginHistory.aggregate([
             {
-            $match: {
-                createdAt: {
-                    $gte: lastDate,
-                    $lt: currentDate
+                $match: {
+                    createdAt: {
+                        $gte: lastDate,
+                        $lt: currentDate
+                    }
                 }
-            }},
-            {$sort: { createdAt: 1 }} ,
-            {$group: {
-                _id: "$login_date",
-                usersCount: { $sum: 1 }
+            },
+            { $sort: { createdAt: 1 } },
+            {
+                $group: {
+                    _id: "$login_date",
+                    usersCount: { $sum: 1 }
+                }
             }
-        }
         ])
         return res.status(200).send(loginRecords)
     } catch (error) {
@@ -87,7 +89,7 @@ exports.get3DayActivity = async (req, res) => {
                 $lt: currentDate
             }
         }).distinct('user_id').count()
-        return res.status(200).send({totalUsers, loginRecords})
+        return res.status(200).send({ totalUsers, loginRecords })
     } catch (error) {
         console.error(error)
         return res.status(400).send('error getting monthly activity')
@@ -105,7 +107,7 @@ exports.getWeeklyActivity = async (req, res) => {
                 $lt: currentDate
             }
         }).distinct('user_id').count()
-        return res.status(200).send({totalUsers, loginRecords})
+        return res.status(200).send({ totalUsers, loginRecords })
     } catch (error) {
         console.error(error)
         return res.status(400).send('error getting weekly activity')
