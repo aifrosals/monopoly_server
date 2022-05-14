@@ -68,5 +68,43 @@ async function forceSell(userResult) {
   }
  }
 
- forceSell()
+ async function addSlotsByUser() {
+  await conn.main();
+  const oldSlots = await Slot.find({})
+  let propertySlots = []
+  let newBoardSlots = []
+  let newSlotCount = oldSlots.length + 7
+  for(let i=0; i<oldSlots.length; i++){
+    let slot = oldSlots[i]
+    if(slot.initial_type == "land") {
+       propertySlots.push(slot)
+    }
+  }
+  let chestCount = (newSlotCount / 8).toFixed(0)
+  let chestIndex = 8
+  for(let i = 0; i < chestCount - 1; i++){
+    if(chestCount < newSlotCount){
+     newBoardSlots[chestIndex] = new Slot({
+      index: chestIndex,
+      name: "chest",
+      current_type: "chest",
+      initial_type: "chest",
+     })
+      chestIndex += 8
+   } 
+}
+let chanceCount = (newSlotCount / 23).toFixed(0)
+let chanceIndex = 23
+for(let i = 0; i < chanceCount - 1; i++){
+  if(chanceCount < newSlotCount){
+   newBoardSlots[chanceCount] = new Slot({
+    index: chanceIndex,
+    name: "chest",
+    current_type: "chest",
+    initial_type: "chest",
+   })
+    chanceCount += 23
+ } 
+} 
+}
 
