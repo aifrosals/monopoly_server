@@ -5,6 +5,7 @@ const uug = require('unique-username-generator')
 require('dotenv').config()
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const slotController = require('../controllers/slotController')
 
 exports.login = async function (req, res) {
   try {
@@ -43,6 +44,7 @@ exports.loginWithToken = async function (req, res) {
 
 exports.registerGuest = async function (req, res) {
   try {
+    const io = req.app.get('socketio');
     let userName = 'Guest'
     let autoId = await User.countDocuments() + 1
     userName = userName + autoId.toString().padStart(3, '0')
@@ -53,6 +55,8 @@ exports.registerGuest = async function (req, res) {
     await guest.save()
     await saveLoginHistory(guest)
     checkWeeklyLogin(guest)
+    await slotController.addSlotsByUser(io)
+    io.sockets.emit('abrupt', 'abrupt')
     return res.status(200).send(guest)
   } catch (error) {
     console.log(error)
@@ -80,6 +84,7 @@ exports.registerUserWithEmail = async function (req, res) {
       user.token = token
       await user.save()
       await saveLoginHistory(user)
+      await slotController.addSlotsByUser()
       checkWeeklyLogin(user)
       return res.status(200).send(user)
 
@@ -93,6 +98,13 @@ exports.registerUserWithEmail = async function (req, res) {
   }
 }
 
+/**
+ * This function is used for registering the guests which are already logged in the game
+ * and want to register their e-mail to become a regular user.
+ * @param {Object} req 
+ * @param {Object} res 
+ * @returns {Object || String} returns user Object if success or String error.
+ */
 exports.registerGuestWithEmail = async function (req, res) {
   try {
     console.log("registerGuestWithEmail", req.body)
@@ -121,7 +133,6 @@ exports.registerGuestWithEmail = async function (req, res) {
   }
 }
 
-
 async function checkUserNameAndEmail(userName, email) {
   try {
 
@@ -141,9 +152,6 @@ async function checkUserNameAndEmail(userName, email) {
   }
 }
 
-
-
-
 async function getRandomUserName() {
   try {
     let userName
@@ -159,7 +167,6 @@ async function getRandomUserName() {
     throw error
   }
 }
-
 
 exports.loginWithEmail = async function (req, res) {
   try {
@@ -462,8 +469,6 @@ async function checkWeeklyLogin(user) {
     throw error
   }
 }
-
-
 
 exports.disableShield = async function () {
   try {

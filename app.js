@@ -84,6 +84,7 @@ startServer();
 const userStream = User.watch([], {fullDocument:'updateLookup'});
 const slotStream = Slot.watch();
 
+app.set('socketio', socketIO)
 
 /**
  * change function of the stream for User schema (model)
@@ -105,7 +106,9 @@ userStream.on("change", (change) => {
 slotStream.on("change", (change) => {
   console.log("change in slot", change);
   console.log(change.operationType);
+  if(change.operationType === 'update') {
   updateSlotsFAUsers();
+  }
 });
 
 /**
