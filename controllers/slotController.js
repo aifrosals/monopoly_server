@@ -650,7 +650,7 @@ exports.addSlotsByUser = async (io) => {
   console.log('this is the socket', io)
   try {
   const oldSlots = await Slot.find({})
-  if(oldSlots.length < 300) {
+  if(oldSlots.length < 100) {
   
   let propertySlots = []
   let newBoardSlots = []
