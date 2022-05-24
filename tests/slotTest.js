@@ -77,7 +77,7 @@ async function addSlotsByUser() {
   console.log(test)
   let propertySlots = []
   let newBoardSlots = []
-  let newSlotCount = oldSlots.length + 7
+  let newSlotCount = oldSlots.length + 8
   console.log(newSlotCount)
   for (let i = 0; i < oldSlots.length; i++) {
     let slot = oldSlots[i]

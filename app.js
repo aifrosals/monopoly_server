@@ -215,6 +215,7 @@ app.post('/buyProperty', slotController.buyProperty)
 app.post('/buyPropertyHalf', slotController.buyPropertyHalf)
 app.post('/upgradeSlot', slotController.upgradeSlot)
 app.post('/urgentSell', slotController.urgentSell)
+app.post('/saveEditableSlots', auth, slotController.saveEditableSlots)
 
 
 /**

@@ -817,3 +817,27 @@ function generateRandomSlotColor() {
   }
   return color;
 }
+
+exports.saveEditableSlots = async (req, res) => {
+  const io = req.app.get('socketio');
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    console.log(req.body.slots)
+    let slots = JSON.parse(req.body.slots)
+    let dataSlots = []
+    for(let i = 0; i < slots.length; i++){
+      dataSlots.push(new Slot(slots[i]))
+    }
+    console.log('added slots', slots)
+    await Slot.deleteMany({}).session(session)
+    var result = await Slot.insertMany(dataSlots, { session: session })
+    await session.commitTransaction();
+    io.sockets.emit('check_board', result)
+    res.status(200).send('Successfully Edited')
+  } catch (error) {
+    console.error("saveEditableSlots error", error)
+    await session.abortTransaction()
+    res.status(400).send('Something went wrong')
+  }
+}
