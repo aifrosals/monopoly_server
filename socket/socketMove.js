@@ -285,6 +285,7 @@ userSocket.on("online", async (userId) => {
       userSocket.emit('update_current_user', userResult)
     } catch (error) {
       console.error("User move error", error);
+      socket.emit('move_error', 'move_error')
       await session.abortTransaction();
     } finally {
       session.endSession();

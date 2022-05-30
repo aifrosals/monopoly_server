@@ -2,10 +2,12 @@ const mongoose = require('mongoose')
 const User = require('../models/user')
 const LoginHistory = require('../models/login_history')
 const uug = require('unique-username-generator')
+const schedule = require('node-schedule')
 require('dotenv').config()
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const slotController = require('../controllers/slotController')
+const { mockNextDiceUpdate } = require('./scheduleController')
 
 exports.login = async function (req, res) {
   try {
@@ -49,8 +51,22 @@ exports.registerGuest = async function (req, res) {
     let autoId = await User.countDocuments() + 1
     userName = userName + autoId.toString().padStart(3, '0')
     let encryptedPassword = await bcrypt.hash(userName, 10)
-    let guest = await User.create({ id: userName, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, bonus: {}, shield: {}, premium: false, items: {} })
+    const mockHourlyDiceUpdateJob = schedule.scheduleJob('0 */1 * * *', function () {
+    })
+    let guest = await User.create({ id: userName, 
+      presence: "offline", 
+      current_slot: 0, 
+      dice: 10, 
+      password: encryptedPassword, 
+      bonus: {}, 
+      shield: {}, 
+      premium: false, 
+      items: {}, 
+      next_dice_update: mockHourlyDiceUpdateJob.nextInvocation().toDate(), 
+      token: '', 
+      login_history: [] })
     let token = jwt.sign({ user_id: guest._id }, process.env.TOKEN_KEY, { expiresIn: '365d' })
+    mockHourlyDiceUpdateJob.cancel()
     guest.token = token
     await guest.save()
     await saveLoginHistory(guest)
@@ -78,9 +94,22 @@ exports.registerUserWithEmail = async function (req, res) {
       }
 
       let encryptedPassword = await bcrypt.hash(password, 10)
-
-      let user = await User.create({ id: id, presence: "offline", current_slot: 0, dice: 10, password: encryptedPassword, email: email.toLowerCase(), bonus: {}, shield: {}, premium: false, items: {}, guest: false })
+      const mockHourlyDiceUpdateJob = schedule.scheduleJob('0 */1 * * *', function () {
+      })
+      let user = await User.create({ id: id, 
+        presence: "offline", 
+        current_slot: 0, 
+        dice: 10, 
+        password: encryptedPassword, 
+        email: email.toLowerCase(), 
+        bonus: {}, 
+        shield: {}, 
+        premium: false, 
+        next_dice_update: mockHourlyDiceUpdateJob.nextInvocation().toDate(),
+        items: {}, 
+        guest: false })
       let token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: '365d' })
+      mockHourlyDiceUpdateJob.cancel()
       user.token = token
       await user.save()
       await saveLoginHistory(user)
@@ -493,7 +522,7 @@ exports.disableShield = async function () {
   }
 }
 
-exports.getHourlyDicePremium = async function () {
+exports.getHourlyDicePremium = async function (nextDiceUpdate) {
   try {
     console.log('hourly getHourlyDicePremium activated')
     var userResult = await User.find({ premium: true })
@@ -501,7 +530,8 @@ exports.getHourlyDicePremium = async function () {
     for (var user of userResult) {
       try {
         user.dice_updated_at = new Date()
-        if (user.dice < 16) {
+        user.next_dice_update = nextDiceUpdate
+        if (user.dice < 15) {
           user.dice += 1
         }
         user.save()
@@ -514,7 +544,7 @@ exports.getHourlyDicePremium = async function () {
   }
 }
 
-exports.getHourlyDiceRegular = async function () {
+exports.getHourlyDiceRegular = async function (nextDiceUpdate) {
   try {
     console.log('hourly getHourlyDiceRegular activated')
     var userResult = await User.find({ premium: false })
@@ -522,6 +552,7 @@ exports.getHourlyDiceRegular = async function () {
     for (var user of userResult) {
       try {
         user.dice_updated_at = new Date()
+        user.next_dice_update = nextDiceUpdate
         if (user.dice < 10) {
           user.dice += 1
         }

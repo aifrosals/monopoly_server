@@ -53,6 +53,9 @@ var UserSchema = new Schema({
     type: Date,
     default: Date.now
   },
+  next_dice_update: {
+    type: Date,
+  },
   items_updated_at: {
     type: Date,
     default: Date.now

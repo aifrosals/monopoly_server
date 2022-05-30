@@ -17,29 +17,29 @@ getSlotSellingPrice = function (level) {
     case 0: {
       price = 1000;
     }
-    break;
-  case 1: {
-    price = 1500;
-  }
-  break;
-  case 2: {
-    price = 2000;
-  }
-  break;
-  case 3: {
-    price = 3200;
-  }
-  break;
-  case 4: {
-    price = 4800;
-  }
-  break;
-  case 5: {
-    price = 6400;
-  }
-  break;
-  default: {}
-  break;
+      break;
+    case 1: {
+      price = 1500;
+    }
+      break;
+    case 2: {
+      price = 2000;
+    }
+      break;
+    case 3: {
+      price = 3200;
+    }
+      break;
+    case 4: {
+      price = 4800;
+    }
+      break;
+    case 5: {
+      price = 6400;
+    }
+      break;
+    default: { }
+      break;
   }
 
   return price;
@@ -94,8 +94,8 @@ exports.upgradeSlot = async function (req, res) {
     var slotIndex = req.body.slotIndex;
     var userId = req.body.userId;
     var slotResult = await Slot.findOne({
-        index: slotIndex,
-      })
+      index: slotIndex,
+    })
       .populate("owner", "id")
       .session(session);
     console.log("upgradeSlot slot", slotResult);
@@ -124,38 +124,38 @@ exports.upgradeSlot = async function (req, res) {
           newType = "house";
           newLevel = 1;
         }
-        break;
-      case 1: {
-        price = 200;
-        name = "Shop";
-        newType = "shop";
-        newLevel = 2;
-      }
-      break;
-      case 2: {
-        price = 400;
-        name = "Condo";
-        newType = "condo";
-        newLevel = 3;
-      }
-      break;
-      case 3: {
-        price = 800;
-        let randomSlot = getRandomSlotName();
-        name = randomSlot.name;
-        newType = randomSlot.type;
-        newLevel = 4;
-      }
-      break;
-      case 4: {
-        price = 1600;
-        name = "City";
-        newType = "city";
-        newLevel = 5;
-      }
-      break;
-      default: {}
-      break;
+          break;
+        case 1: {
+          price = 200;
+          name = "Shop";
+          newType = "shop";
+          newLevel = 2;
+        }
+          break;
+        case 2: {
+          price = 400;
+          name = "Condo";
+          newType = "condo";
+          newLevel = 3;
+        }
+          break;
+        case 3: {
+          price = 800;
+          let randomSlot = getRandomSlotName();
+          name = randomSlot.name;
+          newType = randomSlot.type;
+          newLevel = 4;
+        }
+          break;
+        case 4: {
+          price = 1600;
+          name = "City";
+          newType = "city";
+          newLevel = 5;
+        }
+          break;
+        default: { }
+          break;
       }
 
       if (
@@ -262,8 +262,8 @@ exports.buyProperty = async function (req, res) {
     var userId = req.body.userId;
 
     var slotResult = await Slot.findOne({
-        index: slotIndex,
-      })
+      index: slotIndex,
+    })
       .populate("owner", "id")
       .session(session);
     console.log("urgentSell slot", slotResult);
@@ -325,8 +325,8 @@ exports.buyPropertyHalf = async function (req, res) {
     var userId = req.body.userId;
 
     var slotResult = await Slot.findOne({
-        index: slotIndex,
-      })
+      index: slotIndex,
+    })
       .populate("owner", "id")
       .session(session);
     console.log("urgentSell slot", slotResult);
@@ -387,8 +387,8 @@ exports.urgentSell = async function (req, res) {
     var slotIndex = req.body.slotIndex;
     var userId = req.body.userId;
     var slotResult = await Slot.findOne({
-        index: slotIndex,
-      })
+      index: slotIndex,
+    })
       .populate("owner", "id")
       .session(session);
     console.log("urgentSell slot", slotResult);
@@ -421,18 +421,18 @@ exports.getChance = async function (userResult) {
   try {
     var chance = getRandomInt(1, 6);
     var response = "";
-  
-     switch(chance) {
-       case 1: {
-         response = await loseTenPercent(userResult)
-         break;
-       }
-       case 2: {
-         response = await stealCreditsRandomly(userResult)
+
+    switch (chance) {
+      case 1: {
+        response = await loseTenPercent(userResult)
+        break;
+      }
+      case 2: {
+        response = await stealCreditsRandomly(userResult)
         break;
       }
       case 3: {
-         response = await getShield(userResult)
+        response = await getShield(userResult)
         break;
       }
       case 4: {
@@ -448,6 +448,7 @@ exports.getChance = async function (userResult) {
         break;
       }
     }
+
     var user = await User.findOne({
       _id: userResult._id
     });
@@ -465,13 +466,13 @@ exports.getChance = async function (userResult) {
  * Getting random name for the slot at level 4
  */
 var slot_names = [{
-    name: "Business Center",
-    type: "business_center",
-  },
-  {
-    name: "Theme Park",
-    type: "theme_park",
-  },
+  name: "Business Center",
+  type: "business_center",
+},
+{
+  name: "Theme Park",
+  type: "theme_park",
+},
 ];
 
 function getRandomSlotName() {
@@ -517,21 +518,21 @@ async function loseTenPercent(userResult) {
 async function stealCreditsRandomly(userResult) {
   try {
     var userResultLean = await User.aggregate([{
-        $match: {
-          $and: [{
-            _id: {
-              $ne: userResult._id
-            }
-          }, {
-            "shield.active": false
-          }],
-        },
+      $match: {
+        $and: [{
+          _id: {
+            $ne: userResult._id
+          }
+        }, {
+          "shield.active": false
+        }],
       },
-      {
-        $sample: {
-          size: 1
-        }
-      },
+    },
+    {
+      $sample: {
+        size: 1
+      }
+    },
     ]);
     console.log("stealCredits result", userResultLean);
     if (userResultLean != null) {
@@ -649,162 +650,162 @@ function gotoChallenge() {
 exports.addSlotsByUser = async (io) => {
   console.log('this is the socket', io)
   try {
-  const oldSlots = await Slot.find({})
-  if(oldSlots.length < 100) {
-  
-  let propertySlots = []
-  let newBoardSlots = []
-  let newSlotCount = oldSlots.length + 7
-  console.log(newSlotCount)
-  for (let i = 0; i < oldSlots.length; i++) {
-    let slot = oldSlots[i]
-    if (slot.initial_type == "land") {
-      propertySlots.push(slot)
-    }
-  }
-  console.log('property slot', propertySlots)
-  let chestCount = (newSlotCount / 8).toFixed(0)
-  let chestIndex = 8
-  for (let i = 0; i < chestCount; i++) {
-    if (chestIndex < newSlotCount) {
-      newBoardSlots[chestIndex] = new Slot({
-        index: chestIndex,
-        name: "Community Chest",
-        current_type: "chest",
-        initial_type: "chest",
+    const oldSlots = await Slot.find({})
+    if (oldSlots.length < 100) {
+
+      let propertySlots = []
+      let newBoardSlots = []
+      let newSlotCount = oldSlots.length + 7
+      console.log(newSlotCount)
+      for (let i = 0; i < oldSlots.length; i++) {
+        let slot = oldSlots[i]
+        if (slot.initial_type == "land") {
+          propertySlots.push(slot)
+        }
+      }
+      console.log('property slot', propertySlots)
+      let chestCount = (newSlotCount / 8).toFixed(0)
+      let chestIndex = 8
+      for (let i = 0; i < chestCount; i++) {
+        if (chestIndex < newSlotCount) {
+          newBoardSlots[chestIndex] = new Slot({
+            index: chestIndex,
+            name: "Community Chest",
+            current_type: "chest",
+            initial_type: "chest",
+            color: "#45818e"
+          })
+          chestIndex += 8
+        }
+      }
+      let chanceCount = (newSlotCount / 23).toFixed(0)
+      console.log(chanceCount)
+      let chanceIndex = 23
+      for (let i = 0; i < chanceCount; i++) {
+        if (chanceIndex < newSlotCount) {
+          newBoardSlots[chanceIndex] = new Slot({
+            index: chanceIndex,
+            name: "chance",
+            current_type: "chance",
+            initial_type: "chance",
+            color: "#45818e"
+          })
+          chanceIndex += 23
+        }
+      }
+      let treasureHuntIndex = parseInt(newSlotCount / 2)
+      let blackHoleIndex = parseInt((newSlotCount / 2).toFixed(0)) + 1
+      let wormHoleIndex = parseInt((newSlotCount / 2).toFixed(0)) + 2
+      let rewardIndex = parseInt((newSlotCount / 2).toFixed(0)) - 1
+      console.log(typeof wormHoleIndex)
+      newBoardSlots[blackHoleIndex] = new Slot({
+        index: blackHoleIndex,
+        name: "Black Hole",
+        current_type: "black_hole",
+        initial_type: "black_hole",
         color: "#45818e"
       })
-      chestIndex += 8
-    }
-  }
-  let chanceCount = (newSlotCount / 23).toFixed(0)
-  console.log(chanceCount)
-  let chanceIndex = 23
-  for (let i = 0; i < chanceCount; i++) {
-    if (chanceIndex < newSlotCount) {
-      newBoardSlots[chanceIndex] = new Slot({
-        index: chanceIndex,
-        name: "chance",
-        current_type: "chance",
-        initial_type: "chance",
+      newBoardSlots[wormHoleIndex] = new Slot({
+        index: wormHoleIndex,
+        name: "Worm Hole",
+        current_type: "worm_hole",
+        initial_type: "worm_hole",
         color: "#45818e"
       })
-      chanceIndex += 23
-    }
-  }
-  let treasureHuntIndex = parseInt(newSlotCount / 2)
-  let blackHoleIndex = parseInt((newSlotCount / 2).toFixed(0)) + 1
-  let wormHoleIndex = parseInt((newSlotCount / 2).toFixed(0)) + 2
-  let rewardIndex = parseInt((newSlotCount / 2).toFixed(0)) - 1
-  console.log(typeof wormHoleIndex)
-  newBoardSlots[blackHoleIndex] = new Slot({
-    index: blackHoleIndex,
-    name: "Black Hole",
-    current_type: "black_hole",
-    initial_type: "black_hole",
-    color: "#45818e"
-  })
-  newBoardSlots[wormHoleIndex] = new Slot({
-    index: wormHoleIndex,
-    name: "Worm Hole",
-    current_type: "worm_hole",
-    initial_type: "worm_hole",
-    color: "#45818e"
-  })
-  newBoardSlots[rewardIndex] = new Slot({
-    index: rewardIndex,
-    name: "Reward RM 50",
-    current_type: "reward",
-    initial_type: "reward",
-    color: "#3d17a0"
-  })
-  newBoardSlots[treasureHuntIndex] = new Slot({
-    index: treasureHuntIndex,
-    name: "Treasure Hunt",
-    current_type: "treasure_hunt",
-    initial_type: "treasure_hunt",
-    color: "#3d17a0"
-  })
-  let emptySlots = 0
-  let j = 0
-  for (let i = 1; i < newSlotCount; i++) {
-    if (newBoardSlots[i] == undefined) {
-      console.log('undefined')
-      if (j < propertySlots.length) {
-        newBoardSlots[i] = propertySlots[j]
-        newBoardSlots[i].index = i
-        newBoardSlots[i].isNew = true
-        j++
-      }
-      else {
-        emptySlots++
-      }
-    }
-  }
-  console.log('undefined slots', emptySlots)
-  console.log('property slot', propertySlots.length)
-  for (let i = 0; i < newSlotCount - 1; i++) {
-    if (newBoardSlots[i] == undefined) {
-      newBoardSlots[i] = new Slot({
-        index: i,
-        name: "Land",
-        current_type: "land",
-        initial_type: "land",
-        color: generateRandomSlotColor(),
-        land_price: 50,
-        level: 0
+      newBoardSlots[rewardIndex] = new Slot({
+        index: rewardIndex,
+        name: "Reward RM 50",
+        current_type: "reward",
+        initial_type: "reward",
+        color: "#3d17a0"
       })
-    }
-  }
-
-  newBoardSlots[newSlotCount] = new Slot({
-    index: newSlotCount,
-    name: "Challenge",
-    current_type: "challenge",
-    initial_type: "challenge",
-    color: "#2d3132"
-  })
-  newBoardSlots[0] = new Slot({
-    index: 0,
-    name: "Start",
-    current_type: "start",
-    initial_type: "start",
-    color: "#f1c232"
-  })
-
-  newBoardSlots[newSlotCount + 1] = new Slot({
-    index: newSlotCount + 1,
-    name: "The End",
-    current_type: "end",
-    initial_type: "end",
-    color: "#f1c232"
-  })
-
-  console.log(newBoardSlots.length)
-  console.log(newBoardSlots)
-  for (let i = 0; i < newBoardSlots.length; i++) {
-    if(newBoardSlots[i] == undefined){
-      newBoardSlots[i] = new Slot({
-        index: i,
-        name: "Land",
-        current_type: "land",
-        initial_type: "land",
-        color: generateRandomSlotColor(),
-        land_price: 50,
-        level: 0
+      newBoardSlots[treasureHuntIndex] = new Slot({
+        index: treasureHuntIndex,
+        name: "Treasure Hunt",
+        current_type: "treasure_hunt",
+        initial_type: "treasure_hunt",
+        color: "#3d17a0"
       })
-    }
-  }
+      let emptySlots = 0
+      let j = 0
+      for (let i = 1; i < newSlotCount; i++) {
+        if (newBoardSlots[i] == undefined) {
+          console.log('undefined')
+          if (j < propertySlots.length) {
+            newBoardSlots[i] = propertySlots[j]
+            newBoardSlots[i].index = i
+            newBoardSlots[i].isNew = true
+            j++
+          }
+          else {
+            emptySlots++
+          }
+        }
+      }
+      console.log('undefined slots', emptySlots)
+      console.log('property slot', propertySlots.length)
+      for (let i = 0; i < newSlotCount - 1; i++) {
+        if (newBoardSlots[i] == undefined) {
+          newBoardSlots[i] = new Slot({
+            index: i,
+            name: "Land",
+            current_type: "land",
+            initial_type: "land",
+            color: generateRandomSlotColor(),
+            land_price: 50,
+            level: 0
+          })
+        }
+      }
 
-  await Slot.deleteMany({})
-  await Slot.collection.insertMany(newBoardSlots)
-  io.sockets.emit('check_board', newBoardSlots)
-  
-} 
-} catch (error) {
-  console.error("addSlotsByUser error", error)
-  throw error
-}
+      newBoardSlots[newSlotCount] = new Slot({
+        index: newSlotCount,
+        name: "Challenge",
+        current_type: "challenge",
+        initial_type: "challenge",
+        color: "#2d3132"
+      })
+      newBoardSlots[0] = new Slot({
+        index: 0,
+        name: "Start",
+        current_type: "start",
+        initial_type: "start",
+        color: "#f1c232"
+      })
+
+      newBoardSlots[newSlotCount + 1] = new Slot({
+        index: newSlotCount + 1,
+        name: "The End",
+        current_type: "end",
+        initial_type: "end",
+        color: "#f1c232"
+      })
+
+      console.log(newBoardSlots.length)
+      console.log(newBoardSlots)
+      for (let i = 0; i < newBoardSlots.length; i++) {
+        if (newBoardSlots[i] == undefined) {
+          newBoardSlots[i] = new Slot({
+            index: i,
+            name: "Land",
+            current_type: "land",
+            initial_type: "land",
+            color: generateRandomSlotColor(),
+            land_price: 50,
+            level: 0
+          })
+        }
+      }
+
+      await Slot.deleteMany({})
+      await Slot.collection.insertMany(newBoardSlots)
+      io.sockets.emit('check_board', newBoardSlots)
+
+    }
+  } catch (error) {
+    console.error("addSlotsByUser error", error)
+    throw error
+  }
 
 
 }
@@ -818,6 +819,9 @@ function generateRandomSlotColor() {
   return color;
 }
 
+/**
+ * Save the slots that is edited by the admin 
+ */
 exports.saveEditableSlots = async (req, res) => {
   const io = req.app.get('socketio');
   const session = await mongoose.startSession();
@@ -826,7 +830,7 @@ exports.saveEditableSlots = async (req, res) => {
     console.log(req.body.slots)
     let slots = JSON.parse(req.body.slots)
     let dataSlots = []
-    for(let i = 0; i < slots.length; i++){
+    for (let i = 0; i < slots.length; i++) {
       dataSlots.push(new Slot(slots[i]))
     }
     console.log('added slots', slots)
@@ -839,5 +843,7 @@ exports.saveEditableSlots = async (req, res) => {
     console.error("saveEditableSlots error", error)
     await session.abortTransaction()
     res.status(400).send('Something went wrong')
+  } finally {
+    session.endSession();
   }
 }
