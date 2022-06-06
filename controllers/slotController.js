@@ -778,7 +778,7 @@ exports.addSlotsByUser = async (io) => {
         name: "The End",
         current_type: "end",
         initial_type: "end",
-        color: "#f1c232"
+        color: "#43AA8B"
       })
 
       console.log(newBoardSlots.length)
@@ -810,13 +810,24 @@ exports.addSlotsByUser = async (io) => {
 
 }
 
+
 function generateRandomSlotColor() {
-  var letters = '0123456789ABCDEF';
-  var color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
+  let colors = [
+  '#f1c232', 
+  '#43AA8B', 
+  '#45818e', 
+  '#3d17a0', 
+  '#219EBC', 
+  '#FF595E', 
+  '#F3722C', 
+  '#FF5733', 
+  '#6A4C93', 
+  '#4c9480', 
+  '#944c8b', 
+  '#86ff57', 
+  '#ff57a0']
+  let randomIndex = Math.floor(Math.random() * colors.length)
+  return colors[randomIndex]
 }
 
 /**
