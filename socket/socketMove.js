@@ -126,7 +126,7 @@ userSocket.on("online", async (userId) => {
           console.log('result of slot')
           console.log(slotResult)
 
-          //TODO: Add the condition for counting steps for every slot (can be heavy)
+            //TODO: Add the condition for counting steps for every slot (can be heavy)
           /**
            * Check if the slot already has for urgent sell status "for_sell"
            * if so emit to buy slot at half price
@@ -191,7 +191,6 @@ userSocket.on("online", async (userId) => {
          * If the slot is reward add the current user to step count
          * When step count reaches to number 5: increment 50 credits and set current user's step count to 0
          */
-        // TODO: add cash reward 
         if (slotResult.initial_type == "reward") {
           console.log('reward')
           if (slotResult.all_step_count == null) {

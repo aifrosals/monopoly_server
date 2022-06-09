@@ -5,11 +5,17 @@ const cors = require('cors')
 var server = http.createServer(app);
 const socketIO = require("socket.io")(server);
 var mongoose = require("mongoose");
+// var multer = require("multer")
+ var busboy = require('connect-busboy');
+ var fileUpload = require('express-fileupload');
 
 /**
  * for parsing the request body
  */
 app.use(express.json());
+app.use(fileUpload());
+
+//app.use(busboy)
 
 app.use(cors())
 
@@ -204,6 +210,7 @@ app.get('/getAllUsers', userController.getAllUsers)
 app.post('/activatePremium', userController.activatePremium)
 app.post('/deactivatePremium', userController.deactivatePremium)
 app.post('/addDice', userController.addDices)
+app.post('/uploadTokenImage', auth, userController.uploadTokenImage)
 
 
 /**

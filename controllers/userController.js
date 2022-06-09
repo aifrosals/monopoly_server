@@ -592,3 +592,30 @@ exports.getItemsMonthly = async function () {
     console.error('getItemsMonthly error', error)
   }
 }
+
+exports.uploadTokenImage = async function (req, res) {
+  console.log(req)
+  console.log('file printed')
+  console.log(req.files)
+  // try {
+  //   console.log('uploadTokenImage activated')
+  //   const user = await User.findOne({ _id: req.user._id })
+  //   if (user) {
+  //     user.token_image = req.file.filename
+  //     user.save()
+  //     return res.status(200).send(
+  //   'Token image uploaded successfully'
+  //     )
+  //   }
+  //   else {
+  //     res.status(400).send(
+  //       'User not found'
+  // )
+  //   }
+  // } catch (error) {
+  //   console.error('uploadTokenImage error', error)
+  //   res.status(500).json({
+  //     message: 'Error uploading token image'
+  //   })
+  // }
+}
