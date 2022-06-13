@@ -71,6 +71,12 @@ var UserSchema = new Schema({
   bonus: BonusSchema,
   shield: ShieldSchema,
   items: ItemSchema,
+  token_image_url: {
+    type: String,
+  },
+  profile_image_url: {
+    type: String,
+  }
 
 
 },  {timestamps: true});

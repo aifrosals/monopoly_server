@@ -72,7 +72,7 @@ exports.getCommunityChestCredits = function () {
  */
 exports.getSlots = async function (req, res) {
   try {
-    var result = await Slot.find().populate("owner", "id").sort("index");
+    var result = await Slot.find().populate("owner", "id profile_image_url").sort("index");
     console.log("slots from db", result);
     return res.status(200).send(result);
   } catch (error) {
@@ -226,6 +226,7 @@ exports.buyLand = async function (req, res) {
       console.log("buyLand landPrice", slotResult.landPrice);
       slotResult.owner = userResult;
       slotResult.name = "Land";
+      slotResult.updatedPrice = 50
       userResult.credits = userResult.credits - slotResult.land_price;
       await userResult.save();
       await slotResult.save();
@@ -814,7 +815,7 @@ exports.addSlotsByUser = async (io) => {
 function generateRandomSlotColor() {
   let colors = [
   '#f1c232', 
-  '#43AA8B', 
+  '#4fa874', 
   '#45818e', 
   '#3d17a0', 
   '#219EBC', 

@@ -211,6 +211,7 @@ app.post('/activatePremium', userController.activatePremium)
 app.post('/deactivatePremium', userController.deactivatePremium)
 app.post('/addDice', userController.addDices)
 app.post('/uploadTokenImage', auth, userController.uploadTokenImage)
+app.post('/uploadProfileImage', auth, userController.uploadProfileImage)
 
 
 /**

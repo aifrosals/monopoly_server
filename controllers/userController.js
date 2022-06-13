@@ -594,28 +594,59 @@ exports.getItemsMonthly = async function () {
 }
 
 exports.uploadTokenImage = async function (req, res) {
-  console.log(req)
-  console.log('file printed')
-  console.log(req.files)
-  // try {
-  //   console.log('uploadTokenImage activated')
-  //   const user = await User.findOne({ _id: req.user._id })
-  //   if (user) {
-  //     user.token_image = req.file.filename
-  //     user.save()
-  //     return res.status(200).send(
-  //   'Token image uploaded successfully'
-  //     )
-  //   }
-  //   else {
-  //     res.status(400).send(
-  //       'User not found'
-  // )
-  //   }
-  // } catch (error) {
-  //   console.error('uploadTokenImage error', error)
-  //   res.status(500).json({
-  //     message: 'Error uploading token image'
-  //   })
-  // }
+
+  try {
+  
+    let user = await User.findById(req.body.serverId)
+    console.log('user is found')
+
+
+    if (user) {
+      user.token_image_url = req.body.tokenImageUrl
+      console.log(user)
+      var userResult = await user.save()
+      return res.status(200).send(
+    userResult
+      )
+    }
+    else {
+      return res.status(400).send(
+        'User not found'
+  )
+    }
+  } catch (error) {
+    console.error('uploadTokenImage error', error)
+    return res.status(500).send(
+  'Error uploading token image'
+  )
+  }
 }
+
+exports.uploadProfileImage = async function (req, res) {
+  
+    try {
+    
+      let user = await User.findById(req.body.serverId)
+      if(user) {
+        user.profile_image_url = req.body.profileImageUrl
+        console.log(user)
+        var userResult = await user.save()
+        return res.status(200).send(
+      userResult
+        )
+      }
+      else {
+        return res.status(400).send(
+          'User not found'
+      )
+      }
+    } catch (error) {
+      console.error('uploadProfileImage error', error)
+      return res.status(500).send(
+    'Error uploading profile image'
+    )
+
+      }
+}
+  
+  

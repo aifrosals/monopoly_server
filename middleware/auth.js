@@ -4,6 +4,7 @@ require('dotenv').config()
 const verifyToken = (req, res, next) => {
     const token = req.body.token || req.query.token || req.headers['x-access-token']
     if(token == 'user3') {
+    
         return next()
     }
     if(!token) {
