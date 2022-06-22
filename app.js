@@ -65,6 +65,10 @@ const transactionController = require('./controllers/transactionController')
 const challengeController = require('./controllers/challengeController')
 const feedbackController = require('./controllers/feedbackController')
 const statsController = require('./controllers/statsController')
+const psTemplateController = require('./controllers/pSTemplateController')
+const firebase = require('./firebase/firebase')
+
+firebase.initiate
 
 
 /**
@@ -245,6 +249,11 @@ app.post('/getPaginatedTransactions', transactionController.getPaginatedTransact
 app.post('/submitFeedback', feedbackController.submitFeedback)
 app.get('/getFeedback', feedbackController.getFeedbacks)
 app.post('/getPaginatedFeedback', feedbackController.getPaginatedFeedbacks)
+
+/**
+ * pSlotTemplate routes
+ */
+app.post('/addTemplate',auth, psTemplateController.addTemplate)
 
 
 //TODO: the version of socket is 2.4 which is compatible with flutter version, update accordingly in future

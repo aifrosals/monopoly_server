@@ -20,6 +20,7 @@
     "eslint": "^8.7.0",
     "express": "^4.17.1",
     "express-fileupload": "^1.4.0",
+    "firebase-admin": "^10.2.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.2.1",
     "mongoose": "^6.1.0",
@@ -31,7 +32,7 @@
     "unique-username-generator": "^1.0.1"
   },
   "engines": {
-    "node": "12.x"
+    "node": "16.x"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
