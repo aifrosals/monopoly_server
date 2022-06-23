@@ -6,14 +6,16 @@ var server = http.createServer(app);
 const socketIO = require("socket.io")(server);
 var mongoose = require("mongoose");
 // var multer = require("multer")
- var busboy = require('connect-busboy');
  var fileUpload = require('express-fileupload');
 
 /**
  * for parsing the request body
  */
 app.use(express.json());
-app.use(fileUpload());
+app.use(fileUpload({
+  useTempFiles : true,
+  tempFileDir : '/tmp/'
+}));
 
 //app.use(busboy)
 

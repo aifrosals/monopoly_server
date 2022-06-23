@@ -10,6 +10,7 @@ const PSlotSchema = new Schema({
     },
     active: {
         type: Boolean,
+        default: false,
     },
     level: {
         type: Number
