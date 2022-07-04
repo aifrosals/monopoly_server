@@ -45,6 +45,15 @@ exports.getTemplateByLevel = async function (req, res) {
   }
 }
 
+exports.getActiveTemplates = async function (req, res) {
+  try {
+    const templates = await PSlotTemplate.find({active: true})
+    return res.status(200).send(templates)
+  } catch(error) {
+    return res.status(400).send('Server error')
+  }
+}
+
 exports.activateTemplateByLevel = async function (req, res) {
   const session = await mongoose.startSession()
   session.startTransaction()

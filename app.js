@@ -259,6 +259,7 @@ app.post('/addTemplate',auth, psTemplateController.addTemplate)
 app.post('/getTemplateByLevel', auth, psTemplateController.getTemplateByLevel)
 app.post('/activateTemplateByLevel', auth, psTemplateController.activateTemplateByLevel)
 app.post('/deactivateTemplate', auth, psTemplateController.deactivateTemplate)
+app.get('/getActiveTemplates',psTemplateController.getActiveTemplates)
 
 
 //TODO: the version of socket is 2.4 which is compatible with flutter version, update accordingly in future
