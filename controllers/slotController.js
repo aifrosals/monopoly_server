@@ -72,7 +72,7 @@ exports.getCommunityChestCredits = function () {
  */
 exports.getSlots = async function (req, res) {
   try {
-    var result = await Slot.find().populate("owner", "id profile_image_url").sort("index");
+    var result = await Slot.find().populate("owner", "id items credits profile_image_url").sort("index");
     console.log("slots from db", result);
     return res.status(200).send(result);
   } catch (error) {
@@ -223,10 +223,11 @@ exports.buyLand = async function (req, res) {
       var userResult = await User.findOne({
         id: userId,
       }).session(session);
-      console.log("buyLand landPrice", slotResult.landPrice);
+      slotResult.land_price = 50
+    
       slotResult.owner = userResult;
       slotResult.name = "Land";
-      slotResult.updatedPrice = 50
+      slotResult.updated_Price = 50
       userResult.credits = userResult.credits - slotResult.land_price;
       await userResult.save();
       await slotResult.save();

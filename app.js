@@ -129,7 +129,7 @@ slotStream.on("change", (change) => {
  */
 async function updateSlotsFAUsers() {
   try {
-    var slotResult = await Slot.find().populate("owner", "id").sort('index');
+    var slotResult = await Slot.find().populate("owner", "id items credits profile_image_url").sort('index');
     console.log("updateSlotsFAUsers", slotResult);
     socketIO.sockets.emit("check_board", slotResult);
   } catch (error) {
